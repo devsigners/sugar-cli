@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+const colors = require('colors')
+const pkg = require('../package.json')
+const program = require('./command')
+
+const exitCli = (code = 0) => {
+    process.exit(code)
+}
+
+program.version(pkg.version)
+
+program
+    .command('component <name>', 'Create, delete a component')
+    .command('project <name>', 'create a new project at current dir')
+
+program.on('--help', () => {
+    console.log('  Examples:'.green)
+    console.log('')
+    console.log('    $ sugar component passenger -t 乘客 -p s'.grey)
+    console.log('')
+    console.log('')
+    console.log(`★★★★★  ${pkg.author} ${pkg.name}@v${pkg.version}  ★★★★★`.green)
+})
+
+program.parse(process.argv)
+
+if (program.rawArgs.length === 2) {
+    console.log(`★★★★★  ${pkg.name}@v${pkg.version}  ★★★★★`.green)
+    exitCli()
+}

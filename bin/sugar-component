@@ -1,0 +1,139 @@
+#!/usr/bin/env node
+
+const path = require('path')
+const colors = require('colors')
+const pkg = require('../package.json')
+const program = require('./command')
+const util = require('../utils')
+
+program
+    .option('-d, --delete', 'delete component')
+    .option('-l, --list', 'list components of current dir')
+    .option('-t, --title [title]', 'title for component, default to name')
+    .option(
+        '-s, --states [states]',
+        `syntax like "file,name|file,name", default to "default,默认"`,
+        parseList,
+        []
+    )
+    .option('-p, --type [type]', 'one of ["s", "d"], default to "s"')
+    .parse(process.argv)
+
+/// handle options
+// check name
+const name = program.args[0]
+
+if (program.delete) {
+    deleteComponent(name)
+} else if (program.list) {
+    listComponents(name)
+} else {
+    createComponent(name)
+}
+
+function deleteComponent(dir) {
+    if (!dir) {
+        logHelpInfo(`When delete component, name is required.`.red, '\nUsage: $ sugar component <name> -d'.grey)
+        process.exit(0)
+    }
+    util.exist(dir).then(() => {
+        return util.exist(path.join(dir, 'component.json'))
+    }, () => {
+        logHelpInfo(`Not exist dir "${dir}"`.red)
+        process.exit(0)
+    }).then(() => {
+        return util.rm(dir)
+    }, () => {
+        logHelpInfo(`Dir "${dir}" is not component.`.red)
+        process.exit(0)
+    }).then(() => {
+        console.log('Done!')
+    }).catch((err) => {
+        console.log(err.toString().red)
+    })
+}
+
+function listComponents(dir) {
+
+}
+
+function createComponent(name) {
+    if (!name) {
+        logHelpInfo(`When create component, name is required.`.red, '\nUsage: $ sugar component <name> [options]'.grey)
+        process.exit(0)
+    }
+    // check states
+    let defaultState
+    const states = program.states.map((s, i) => {
+        const tmp = s.split(',')
+        if (i === 0) {
+            defaultState = tmp[0]
+        }
+        return {
+            file: tmp[0],
+            name: tmp[1]
+        }
+    }).reduce((pre, cur) => {
+        pre[cur.file] = cur
+        return pre
+    }, {})
+    if (util.isPlainObject(states)) {
+        states.default = {
+            file: 'default',
+            name: '默认'
+        }
+        defaultState = 'default'
+    }
+
+    const tasks = []
+    // 1. write component config file
+    tasks.push(util.write(
+        path.join(process.cwd(), name, 'component.json'),
+        generateComponentConfig(
+            program.title || name,
+            states,
+            program.type,
+            defaultState
+        ),
+        true
+    ).then(() => console.log('component.json created.')))
+
+    // 2. create html file for states
+    for (let s in states) {
+        tasks.push(util.write(
+            path.join(process.cwd(), name, states[s].file + '.html'),
+            `<!-- __component_key__={{__c_${name}__._key}} -->`,
+            true
+        ).then(() => console.log(states[s].file + '.html created.')))
+    }
+
+    // TODO: 3. if type is d, create index.html
+
+    Promise.all(tasks).then(() => {
+        console.log('Done!')
+        process.exit(0)
+    }).catch((err) => {
+        console.log(err.toString().red)
+    })
+}
+
+function generateComponentConfig(title, states, type = 's', defaultState) {
+    return JSON.stringify({
+        name: title,
+        type,
+        states,
+        _state: defaultState,
+    }, null, '\t')
+}
+
+function logHelpInfo(info, usage) {
+    if (info) console.log(info)
+    if (usage) console.log(usage)
+    console.log()
+    console.log('Run help for details: $ sugar help component'.grey)
+    console.log()
+}
+
+function parseList(arg) {
+    return !arg ? [] : arg.toString().split('|')
+}

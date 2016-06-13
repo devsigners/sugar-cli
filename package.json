@@ -1,0 +1,35 @@
+{
+  "name": "sugar-cli",
+  "version": "0.0.1",
+  "description": "Cli for static page development",
+  "main": "index.js",
+  "bin": {
+    "sugar": "bin/sugar"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/creeperyang/sugar-cli.git"
+  },
+  "keywords": [
+    "sugar",
+    "cli",
+    "sugar-develop"
+  ],
+  "author": "creeperyang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/creeperyang/sugar-cli/issues"
+  },
+  "homepage": "https://github.com/creeperyang/sugar-cli#readme",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "commander": "^2.9.0",
+    "glob-all": "^3.0.3",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.5.2",
+    "yamljs": "^0.2.7"
+  }
+}
