@@ -5,6 +5,7 @@ const colors = require('colors')
 const pkg = require('../package.json')
 const program = require('./command')
 const util = require('../utils')
+const log = require('./logger')('sugar-component')
 
 program
     .option('-d, --delete', 'delete component')
@@ -33,23 +34,23 @@ if (program.delete) {
 
 function deleteComponent(dir) {
     if (!dir) {
-        logHelpInfo(`When delete component, name is required.`.red, '\nUsage: $ sugar component <name> -d'.grey)
+        logHelpInfo(`When delete component, name is required.`, 'Usage: $ sugar component <name> -d')
         process.exit(0)
     }
     util.exist(dir).then(() => {
         return util.exist(path.join(dir, 'component.json'))
     }, () => {
-        logHelpInfo(`Not exist dir "${dir}"`.red)
+        logHelpInfo(`Not exist dir "${dir}"`)
         process.exit(0)
     }).then(() => {
         return util.rm(dir)
     }, () => {
-        logHelpInfo(`Dir "${dir}" is not component.`.red)
+        logHelpInfo(`"${dir}" is not component.`)
         process.exit(0)
     }).then(() => {
-        console.log('Done!')
+        log(`Successfully delete component ${dir}!`)
     }).catch((err) => {
-        console.log(err.toString().red)
+        log(err.toString(), 'red')
     })
 }
 
@@ -57,17 +58,18 @@ function listComponents(dir = '') {
     util.list(path.join(process.cwd(), dir), ['*/component.json']).then((files) => {
         files = files.map(file => file.substring(0, file.length - 15))
         if (files.length) {
-            console.log(`Find ${files.length} components, they are:`)
-            console.log(files.join('\n'))
+            log(`Find ${files.length} ${
+                files.length > 1 ? 'components' : 'component'
+            }:\n\t${files.join('\n\t')}`)
         } else {
-            console.log(`Find no components.`)
+            log(`Find no components.`)
         }
     })
 }
 
 function createComponent(name) {
     if (!name) {
-        logHelpInfo(`When create component, name is required.`.red, '\nUsage: $ sugar component <name> [options]'.grey)
+        logHelpInfo(`When create component, name is required.`, 'Usage: $ sugar component <name> [options]')
         process.exit(0)
     }
     // check states
@@ -104,7 +106,7 @@ function createComponent(name) {
             defaultState
         ),
         true
-    ).then(() => console.log('component.json created.')))
+    ).then(() => log('component.json created.')))
 
     // 2. create html file for states
     for (let s in states) {
@@ -112,16 +114,16 @@ function createComponent(name) {
             path.join(process.cwd(), name, states[s].file + '.html'),
             `<!-- __component_key__={{__c_${name}__._key}} -->`,
             true
-        ).then(() => console.log(states[s].file + '.html created.')))
+        ).then(() => log(states[s].file + '.html created.')))
     }
 
     // TODO: 3. if type is d, create index.html
 
     Promise.all(tasks).then(() => {
-        console.log('Done!')
+        log(`Successfully create component ${name}!`)
         process.exit(0)
     }).catch((err) => {
-        console.log(err.toString().red)
+        log(err.toString(), 'red')
     })
 }
 
@@ -135,11 +137,10 @@ function generateComponentConfig(title, states, type = 's', defaultState) {
 }
 
 function logHelpInfo(info, usage) {
-    if (info) console.log(info)
-    if (usage) console.log(usage)
+    if (info) log(info, 'red')
+    if (usage) log(usage)
     console.log()
     console.log('Run help for details: $ sugar help component'.grey)
-    console.log()
 }
 
 function parseList(arg) {
