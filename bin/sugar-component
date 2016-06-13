@@ -53,8 +53,16 @@ function deleteComponent(dir) {
     })
 }
 
-function listComponents(dir) {
-
+function listComponents(dir = '') {
+    util.list(path.join(process.cwd(), dir), ['*/component.json']).then((files) => {
+        files = files.map(file => file.substring(0, file.length - 15))
+        if (files.length) {
+            console.log(`Find ${files.length} components, they are:`)
+            console.log(files.join('\n'))
+        } else {
+            console.log(`Find no components.`)
+        }
+    })
 }
 
 function createComponent(name) {
