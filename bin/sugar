@@ -11,8 +11,8 @@ const exitCli = (code = 0) => {
 program.version(pkg.version)
 
 program
-    .command('component <name>', 'Create, delete a component')
-    .command('project <name>', 'create a new project at current dir')
+    .command('component <name>', 'Create, delete, list component')
+    .command('project <name>', 'Create, delete, list project')
 
 program.on('--help', () => {
     console.log('  Examples:'.green)

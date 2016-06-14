@@ -102,6 +102,26 @@ const parseMixedYaml = (content) => {
     }
 }
 
+const toYaml = (obj, spaceLen = 4) => yaml.stringify(obj, spaceLen)
+
+const configTypeMap = {
+    '.yml': parseYaml,
+    '.yaml': parseYaml,
+    '.json': JSON.parse
+}
+const loadConfig = (url, type, sync) => {
+    if (!type) type = path.extname(url)
+    // if js, always sync
+    if (type === '.js') {
+        const cfg = require(url)
+        return cfg.config || cfg
+    }
+
+    const parse = configTypeMap[type] || parseYaml
+    if (sync) return parse(fs.readFileSync(url))
+    return read(url).then(data => parse(data))
+}
+
 const merge = (target, source, ...rest) => {
     if (rest.length) return merge(merge(target, source), ...rest)
     for (let prop in source) {
@@ -197,6 +217,8 @@ module.exports = {
     readlinkSync,
     parseYaml,
     parseMixedYaml,
+    toYaml,
+    loadConfig,
     parseString,
     genUniqueKey,
     accessDeepProperty
