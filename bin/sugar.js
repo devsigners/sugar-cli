@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const colors = require('colors')
+const colors = require('colors') // eslint-disable-line
 const pkg = require('../package.json')
 const program = require('./command')
 

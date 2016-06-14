@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 const path = require('path')
-const colors = require('colors')
-const pkg = require('../package.json')
+const colors = require('colors') // eslint-disable-line
 const program = require('./command')
 const util = require('../utils')
 const log = require('./logger')('sugar-component')
@@ -109,7 +108,7 @@ function createComponent(name) {
     ).then(() => log('component.json created.')))
 
     // 2. create html file for states
-    for (let s in states) {
+    for (const s in states) {
         tasks.push(util.write(
             path.join(process.cwd(), name, states[s].file + '.html'),
             `<!-- __component_key__={{__c_${name}__._key}} -->`,
@@ -132,7 +131,7 @@ function generateComponentConfig(title, states, type = 's', defaultState) {
         name: title,
         type,
         states,
-        _state: defaultState,
+        _state: defaultState
     }, null, '\t')
 }
 

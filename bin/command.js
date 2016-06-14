@@ -8,17 +8,17 @@ const humanReadableArgName = (arg) => {
 }
 
 const pad = (str, width) => {
-    let len = Math.max(0, width - str.length)
+    const len = Math.max(0, width - str.length)
     return str + Array(len + 1).join(' ')
 }
 
 Command.prototype.commandHelp = function() {
     if (!this.commands.length) return ''
 
-    let commands = this.commands.filter((cmd) => {
+    const commands = this.commands.filter((cmd) => {
         return !cmd._noHelp
     }).map((cmd) => {
-        let args = cmd._args.map(function(arg) {
+        const args = cmd._args.map(function(arg) {
             return humanReadableArgName(arg)
         }).join(' ')
 
@@ -32,19 +32,23 @@ Command.prototype.commandHelp = function() {
     }, 0)
 
     return [
-        '', colors.green('  Commands:'), '', commands.map(function(cmd) {
-            let desc = cmd[1] ? '  ' + cmd[1] : ''
+        '',
+        colors.green('  Commands:'),
+        '',
+        commands.map((cmd) => {
+            const desc = cmd[1] ? '  ' + cmd[1] : ''
             return pad(cmd[0], width) + desc
-        }).join('\n').replace(/^/gm, '    '), ''
+        }).join('\n').replace(/^/gm, '    '),
+        ''
     ].join('\n')
 }
 
 Command.prototype.optionHelp = function() {
-    let width = this.largestOptionLength()
+    const width = this.largestOptionLength()
 
     // Prepend the help information
     return [colors.green(pad('-h, --help', width)) + '  ' + colors.grey('output usage information')]
-        .concat(this.options.map(function(option) {
+        .concat(this.options.map((option) => {
             return colors.green(pad(option.flags, width)) + '  ' + colors.grey(option.description)
         }))
         .join('\n')
@@ -62,17 +66,13 @@ Command.prototype.helpInformation = function() {
     if (this._alias) {
         cmdName = cmdName + '|' + this._alias
     }
-    let usage = [
-        '', colors.green('  Usage: ' + cmdName + ' ' + this.usage()), ''
-    ]
+    const usage = ['', colors.green('  Usage: ' + cmdName + ' ' + this.usage()), '']
 
     let cmds = []
-    let commandHelp = this.commandHelp()
+    const commandHelp = this.commandHelp()
     if (commandHelp) cmds = [commandHelp]
 
-    let options = [
-        colors.green('  Options:'), '', '' + this.optionHelp().replace(/^/gm, '    '), '', ''
-    ]
+    const options = [colors.green('  Options:'), '', '' + this.optionHelp().replace(/^/gm, '    '), '', '']
 
     return usage
         .concat(cmds)

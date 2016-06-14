@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 const path = require('path')
-const colors = require('colors')
-const pkg = require('../package.json')
+const colors = require('colors') // eslint-disable-line
 const program = require('./command')
 const util = require('../utils')
 const log = require('./logger')('sugar-project')

@@ -46,14 +46,14 @@ const list = (root, pattern) => {
     return new Promise(function(resolve, reject) {
         glob(pattern, root ? {
             cwd: root
-        } : {}, (err, data) =>  err ? reject(err) : resolve(data))
+        } : {}, (err, data) => err ? reject(err) : resolve(data))
     })
 }
 
 const write = (filename, content, createDirIfNotExists, options) => {
     return new Promise((resolve, reject) => {
-        let dir = createDirIfNotExists && filename && path.parse(filename).dir
-        let promise = createDirIfNotExists ? exist(dir).catch(() => {
+        const dir = createDirIfNotExists && filename && path.parse(filename).dir
+        const promise = createDirIfNotExists ? exist(dir).catch(() => {
             return mkdir(dir)
         }) : Promise.resolve(null)
         promise.then(() => {
@@ -68,13 +68,13 @@ const readlinkSync = (url) => {
     const parts = url.split(path.sep)
     let realUrl = ''
     let part
-    let isAbsolute = parts[0] === ''
+    const isAbsolute = parts[0] === ''
     while ((part = parts.shift()) != null) {
         if (part === '') {
             realUrl += '/'
         } else {
             realUrl = path.join(realUrl, part)
-            let stat = fs.lstatSync(realUrl)
+            const stat = fs.lstatSync(realUrl)
             if (stat.isSymbolicLink()) {
                 // '/tmp' --> 'private/tmp', loss absolute
                 realUrl = fs.readlinkSync(realUrl)
@@ -87,13 +87,12 @@ const readlinkSync = (url) => {
     return realUrl
 }
 
-
 const parseRe = /^\s*\-{3,3}([\S\s]+?)\-{3,3}/i
 const parseYaml = (content) => {
     return content && typeof content === 'string' ? yaml.parse(content) : null
 }
 const parseMixedYaml = (content) => {
-    let res = parseRe.exec(content)
+    const res = parseRe.exec(content)
     return res ? {
         metadata: parseYaml(res[1]),
         content: content.slice(res[0].length)
@@ -124,7 +123,7 @@ const loadConfig = (url, type, sync) => {
 
 const merge = (target, source, ...rest) => {
     if (rest.length) return merge(merge(target, source), ...rest)
-    for (let prop in source) {
+    for (const prop in source) {
         if (isObject(source[prop]) && isObject(target[prop])) {
             merge(target[prop], source[prop])
         } else {
@@ -135,9 +134,9 @@ const merge = (target, source, ...rest) => {
 }
 
 // only merge property that target has
-const mergeFields = function(target, source) {
+const mergeFields = function(target, source, ...rest) {
     if (rest.length) return mergeFields(mergeFields(target, source), ...rest)
-    for (let prop in source) {
+    for (const prop in source) {
         if (!(prop in target)) continue
         if (isObject(source[prop]) && isObject(target[prop])) {
             mergeFields(target[prop], source[prop])
@@ -155,7 +154,7 @@ const isObject = (obj) => {
 
 const isPlainObject = (obj) => {
     if (!obj || !Object.prototype.isPrototypeOf(obj)) return false
-    for (let prop in obj) {
+    for (const prop in obj) { // eslint-disable-line
         return false
     }
     return true
@@ -170,8 +169,8 @@ const isPlainObject = (obj) => {
 const parseString = (str) => {
     if (!str) return null
     const map = {}
-    (str + '').split('|').forEach(v => {
-        let pairs = v.split('=')
+    ;(str + '').split('|').forEach(v => {
+        const pairs = v.split('=')
         let res
         if (pairs.length === 1) {
             res = /^(-|\+?)([\S]+)$/.exec(pairs[0])
@@ -193,7 +192,7 @@ const genUniqueKey = () => Date.now().toString() + Math.random().toString().slic
  * @return {Any}                 the value
  */
 const accessDeepProperty = (obj, propertyName) => {
-    let names = propertyName.split('.')
+    const names = propertyName.split('.')
     names.some((p, i) => {
         obj = obj[p]
         if (!(obj instanceof Object)) {
