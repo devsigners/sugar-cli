@@ -1,4 +1,3 @@
-const path = require('path')
 const colors = require('colors')
 
 function colored(text, color = 'black') {

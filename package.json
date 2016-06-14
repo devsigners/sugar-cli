@@ -4,9 +4,10 @@
   "description": "Cli for static page development",
   "main": "index.js",
   "bin": {
-    "sugar": "bin/sugar"
+    "sugar": "bin/sugar.js"
   },
   "scripts": {
+    "lint": "./node_modules/.bin/eslint bin utils",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -27,6 +28,7 @@
   "dependencies": {
     "colors": "^1.1.2",
     "commander": "^2.9.0",
+    "eslint": "^2.12.0",
     "glob-all": "^3.0.3",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.5.2",
