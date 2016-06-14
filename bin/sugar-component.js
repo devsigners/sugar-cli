@@ -54,7 +54,10 @@ function deleteComponent(dir) {
 }
 
 function listComponents(dir = '') {
-    util.list(path.join(process.cwd(), dir), ['*/component.json']).then((files) => {
+    util.list(path.join(process.cwd(), dir), [
+        '*/component.json',
+        '!node_modules/component.json'
+    ]).then((files) => {
         files = files.map(file => file.substring(0, file.length - 15))
         if (files.length) {
             log(`Find ${files.length} ${
