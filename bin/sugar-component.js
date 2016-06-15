@@ -74,6 +74,17 @@ function createComponent(name) {
         logHelpInfo(`When create component, name is required.`, 'Usage: $ sugar component <name> [options]')
         process.exit(0)
     }
+    let names = name.split(path.sep)
+    if (!names[0]) {
+        logHelpInfo(`Maybe name (${name}) is invalid?`, 'We prefer "component"|"dir/component" to be name.')
+        process.exit(0)
+    }
+    if (!names[names.length - 1]) {
+        names = names.slice(0, -1)
+    }
+    const dirRoot = path.join(process.cwd(), name)
+    name = names[names.length - 1]
+
     // check states
     let defaultState
     const states = program.states.map((s, i) => {
@@ -100,7 +111,7 @@ function createComponent(name) {
     const tasks = []
     // 1. write component config file
     tasks.push(util.write(
-        path.join(process.cwd(), name, 'component.json'),
+        path.join(dirRoot, 'component.json'),
         generateComponentConfig(
             program.title || name,
             states,
@@ -113,7 +124,7 @@ function createComponent(name) {
     // 2. create html file for states
     for (const s in states) {
         tasks.push(util.write(
-            path.join(process.cwd(), name, states[s].file + '.html'),
+            path.join(dirRoot, states[s].file + '.html'),
             `<!-- __component_key__={{__c_${name}__._key}} -->`,
             true
         ).then(() => log(states[s].file + '.html created.')))
