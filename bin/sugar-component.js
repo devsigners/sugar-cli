@@ -47,7 +47,7 @@ function deleteComponent(dir) {
         logHelpInfo(`"${dir}" is not component.`)
         process.exit(0)
     }).then(() => {
-        log(`Successfully delete component ${dir}!`)
+        log(`Successfully delete component "${dir}"!`)
     }).catch((err) => {
         log(err.toString(), 'red')
     })
@@ -119,7 +119,7 @@ function createComponent(name) {
             defaultState
         ),
         true
-    ).then(() => log('component.json created.')))
+    ).then(() => log(`"component.json" created.`)))
 
     // 2. create html file for states
     for (const s in states) {
@@ -127,13 +127,13 @@ function createComponent(name) {
             path.join(dirRoot, states[s].file + '.html'),
             `<!-- __component_key__={{__c_${name}__._key}} -->`,
             true
-        ).then(() => log(states[s].file + '.html created.')))
+        ).then(() => log(`"${states[s].file}.html" created.`)))
     }
 
     // TODO: 3. if type is d, create index.html
 
     Promise.all(tasks).then(() => {
-        log(`Successfully create component ${name}!`)
+        log(`Successfully create component "${name}"!`)
         process.exit(0)
     }).catch((err) => {
         log(err.toString(), 'red')
