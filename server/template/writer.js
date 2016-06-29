@@ -265,6 +265,31 @@ class ServerWriter extends Writer {
                     // recursively resolve dependencies for partial
                     const tokens = self.parse(content, undefined, token, partialUrl)
                     const promises = collectAndResolveDependencies(tokens)
+                    // check whether the partial is component or not
+                    let isComponent = false
+                    let componentUrl, componentExt
+                    if (statSync(
+                        (componentUrl = join(partialUrl, '../component.json'))
+                    )) {
+                        componentExt = '.json'
+                    } else if (statSync(
+                        (componentUrl = join(partialUrl, '../component.yml'))
+                    )) {
+                        componentExt = '.yml'
+                    } else if (statSync(
+                        (componentUrl = join(partialUrl, '../component.yaml'))
+                    )) {
+                        componentExt = '.yaml'
+                    } else if (statSync(
+                        (componentUrl = join(partialUrl, '../component.js'))
+                    )) {
+                        componentExt = '.js'
+                    }
+                    if (componentExt) {
+                        promises.push(loadConfig(componentUrl, componentExt).then(data => {
+                            tokens.metadata = merge(data, tokens.metadata)
+                        }))
+                    }
                     return Promise.all(promises)
                 })
         }
