@@ -11,9 +11,10 @@ const exitCli = (code = 0) => {
 program.version(pkg.version)
 
 program
-    .command('init <name>', 'Init sugar develop environment')
+    .command('init <path>', 'Init sugar develop environment')
     .command('component <name>', 'Create, delete, list component')
     .command('project <name>', 'Create, delete, list project')
+    .command('start <config>', 'Run develop server')
 
 program.on('--help', () => {
     console.log('  Examples:'.green)

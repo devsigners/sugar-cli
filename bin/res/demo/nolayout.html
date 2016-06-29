@@ -1,0 +1,27 @@
+---
+layout: false
+---
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>纯静态页</title>
+    <meta charset='utf8'>
+    {{css "../shared/static/styles/app.css"}}
+    {{css "static/css/main.css"}}
+</head>
+<body style="text-align: center;">
+    <h1>这个页面是纯静态页</h1>
+    <p>关闭layout即可避免页面被嵌入布局中，怎么关闭？</p>
+    <p>
+        在页面头部加入以下代码：
+    </p>
+    <pre style="text-align: left;max-width: 100px;margin: auto;">
+        <code>
+---
+layout: false
+---
+        </code>
+    </pre>
+</body>
+</html>

@@ -1,0 +1,20 @@
+---
+layout: shared:simple.html
+data: shared:simple.json
+list:
+    - 强大
+    - 便捷
+    - 易学
+---
+
+<article style="padding: 12px 0 64px;">
+    <h1>测试custom layout，`layout: shared:simple.html`</h1>
+    <p>顺便测试dataFile，yaml head data，内置helper。</p>
+    <br>
+    <br>
+    <pre style="text-align: left;max-width: 320px;margin: auto;">
+        {{#each list}}
+        $$index: {{$$index}}, value: {{.}}
+        {{/each}}
+    </pre>
+</article>
