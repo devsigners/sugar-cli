@@ -11,6 +11,7 @@ const exitCli = (code = 0) => {
 program.version(pkg.version)
 
 program
+    .command('init <name>', 'Init sugar develop environment')
     .command('component <name>', 'Create, delete, list component')
     .command('project <name>', 'Create, delete, list project')
 
