@@ -1,0 +1,15 @@
+{
+	"name": "flightInfo",
+	"type": "s",
+	"states": {
+		"default": {
+			"file": "default",
+			"name": "默认"
+		},
+		"nostopShared": {
+			"file": "nostop_shared",
+			"name": "直飞&共享航班"
+		},
+	},
+	"_state": "default"
+}

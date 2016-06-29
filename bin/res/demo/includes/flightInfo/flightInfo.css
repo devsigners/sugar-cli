@@ -1,0 +1,187 @@
+.flight-info {
+    position: relative;
+    padding: 26px 0 30px;
+    border-bottom: 1px solid #e0e5e7
+}
+.flight-info .separation-line {
+    margin: 20px 30px;
+    border-bottom: 1px dashed #d4dde6
+}
+.flt-arrive, .flt-arrow, .flt-date, .flt-depart {
+    display: inline-block;
+    vertical-align: middle
+}
+.cost-row .corner, .flt-depart, .total-price {
+    text-align: right
+}
+.flight-city, .flight-date, .flight-tit, .flight-transfer, .rail-tit {
+    text-align: center
+}
+.flight-city {
+    padding-bottom: 8px;
+    font-size: 16px;
+    font-weight: 700
+}
+.flight-city .basic-tag {
+    margin-right: 4px;
+    padding: 0 4px 0 5px;
+    font-family: PingFang SC, Hiragino Sans GB, Lantinghei SC, Simsun;
+    vertical-align: middle;
+    font-weight: 300
+}
+.flight-city .flt-arrow {
+    position: relative;
+    width: 15px;
+    height: 2px;
+    margin: 0 2px 0 1px;
+    background: #000;
+    vertical-align: middle
+}
+.flight-city .ico-arrow {
+    display: block;
+    position: absolute;
+    right: -2px;
+    top: -8px;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    border-top: 5px dashed #f5f8f9;
+    border-right: 5px dashed #f5f8f9;
+    border-bottom: 5px solid #000
+}
+.flt-date {
+    padding-right: 14px
+}
+.flt-date .week {
+    padding-left: 9px
+}
+.flight-tit, .rail-tit {
+    padding-bottom: 11px;
+    color: #849bab
+}
+.flight-tit span, .rail-tit span {
+    margin-right: 10px
+}
+.flight-tit .abbr, .rail-tit .abbr {
+    margin-right: 0
+}
+.flight-tit .flt-airline img, .rail-tit .flt-airline img {
+    margin-right: 4px;
+    vertical-align: -3px
+}
+.rail-tit .ico-gaotie {
+    margin-right: 4px
+}
+.flight-detail {
+    padding-top: 10px
+}
+.flight-detail .flt-arrive, .flight-detail .flt-depart {
+    width: 105px
+}
+.flight-detail .time {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    height: 27px;
+    overflow: hidden
+}
+.flight-detail .airport {
+    display: block;
+    width: 105px;
+    padding-top: 6px
+}
+.flight-detail .flt-arrow {
+    position: relative;
+    width: 148px;
+    padding: 0 16px;
+    text-align: center
+}
+.flight-detail .time-and {
+    font-size: 13px;
+    line-height: 35px
+}
+.flt-arrow .timeline {
+    position: relative;
+    margin: 8px auto 0;
+    width: 148px;
+    height: 1px;
+    background: #dbe2ea
+}
+.flt-arrow .timeline .dot {
+    position: absolute;
+    left: 0;
+    top: -2px;
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #dbe2ea
+}
+.flt-arrow .timeline .dot-end {
+    left: auto;
+    right: 0
+}
+.flt-arrow .cost-time {
+    margin-bottom: 21px;
+    color: #849bab
+}
+.flt-non-stop {
+    padding-top: 8px
+}
+.flt-non-stop .timeline {
+    margin-top: 0
+}
+.flt-transfer {
+    position: relative;
+    vertical-align: middle;
+    padding: 11px 0
+}
+.flt-transfer .timeline {
+    margin-top: 0
+}
+.flt-transfer .cost-time {
+    position: absolute;
+    left: 30%;
+    top: -8px;
+    z-index: 2;
+    padding: 0 5px;
+    background: #f5f8f9;
+    margin: 0
+}
+.flt-transfer .tag-transfer {
+    max-width: 125px;
+    position: relative;
+    top: -10px;
+    margin: 0 auto;
+    padding: 0 4px 0 5px
+}
+.flt-transfer .tag-transfer .trasnfer-city {
+    max-width: 50px
+}
+.flt-transfer .tag-transfer .cost-time {
+    position: static;
+    padding: 0;
+    background: none
+}
+.flt-transfer .tag-transfer .ico-clock {
+    display: none
+}
+.flight-transfer {
+    padding: 15px 0 11px
+}
+.flt-slide {
+    padding-top: 5px;
+    text-align: center
+}
+.flight-path {
+    position: relative
+}
+.flight-path .ico-supplier {
+    top: 0
+}
+.flight-trains .flight-transfer {
+    padding-bottom: 24px
+}
+.flight-cost {
+    padding: 10px 30px
+}
