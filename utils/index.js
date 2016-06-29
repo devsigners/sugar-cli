@@ -30,6 +30,14 @@ const exist = (filename) => {
     })
 }
 
+const statSync = (url) => {
+    try {
+        return fs.statSync(url)
+    } catch (error) {
+        return false
+    }
+}
+
 const rm = (pattern) => {
     return new Promise((resolve, reject) => {
         rimraf(pattern, (err) => err ? reject(err) : resolve())
@@ -160,55 +168,13 @@ const isPlainObject = (obj) => {
     return true
 }
 
-// -name|path=full|test=1,2,3
-// {
-//     name: false,
-//     path: 'full',
-//     test: [1,2,3]
-// }
-const parseString = (str) => {
-    if (!str) return null
-    const map = {}
-    ;(str + '').split('|').forEach(v => {
-        const pairs = v.split('=')
-        let res
-        if (pairs.length === 1) {
-            res = /^(-|\+?)([\S]+)$/.exec(pairs[0])
-            if (!res) return
-            map[res[2]] = res[1] !== '-'
-        } else if (pairs.length === 2) {
-            map[pairs[0]] = /,/.test(pairs[1]) ? pairs[1].split(',') : pairs[1]
-        }
-    })
-    return map
-}
-
-const genUniqueKey = () => Date.now().toString() + Math.random().toString().slice(-4)
-
-/**
- * access object property via deep propertyName
- * @param  {Object} obj          source object
- * @param  {String} propertyName property name, could be like 'user.name'
- * @return {Any}                 the value
- */
-const accessDeepProperty = (obj, propertyName) => {
-    const names = propertyName.split('.')
-    names.some((p, i) => {
-        obj = obj[p]
-        if (!(obj instanceof Object)) {
-            i < names.length - 1 && (obj = undefined)
-            return true
-        }
-    })
-    return obj
-}
-
 module.exports = {
     merge,
     mergeFields,
     isPlainObject,
     read,
     exist,
+    statSync,
     mkdir,
     list,
     write,
@@ -217,8 +183,5 @@ module.exports = {
     parseYaml,
     parseMixedYaml,
     toYaml,
-    loadConfig,
-    parseString,
-    genUniqueKey,
-    accessDeepProperty
+    loadConfig
 }
