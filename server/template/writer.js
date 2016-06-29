@@ -187,7 +187,10 @@ class ServerWriter extends Writer {
             const promises = collectAndResolveDependencies(layoutTokens)
             return Promise.all(promises).then(() => {
                 debug('[render] Layout dependencies are resolved, then render layout.')
-                return this.renderTokens(layoutTokens, ctx.push({ body }), layout)
+                return this.renderTokens(layoutTokens, ctx.push(
+                    // enable layout metadata, but no dataFile
+                    merge({ body }, layoutTokens.metadata)
+                ), layout)
             })
         })
 
@@ -315,20 +318,32 @@ class ServerWriter extends Writer {
     renderPartial(token, context, originalTemplate) {
         let value = this.partials[token.value]
         if (value != null) {
+            // token.value is partial name and also partial url
+            // In fact, the partial has been parsed when
+            // collectAndResolveDependencies and we fetch cache this time
+            const tokens = this.parse(value, undefined, token, token.value)
             let data = token.params.context
+            let subContext
             if (data != null) {
                 let isRaw = token.params.contextIsString || isRawValue(data)
                 data = isRaw ? getValueFromString(data, isRaw.preferNumber) : context.lookup(data)
+                // enable partial metadata, still not dataFile
+                // Note: if data is simple value, we still merge,
+                // and the data can be accessed via $$data
+                if (isRaw) {
+                    subContext = tokens.metadata
+                        ? context.push(tokens.metadata, { data })
+                        : context.push(data, { data })
+                } else {
+                    subContext = context.push(merge(data, tokens.metadata))
+                }
+            } else {
+                subContext = tokens.metadata ? context.push(tokens.metadata) : context
             }
             debug('[renderPartial] partial: %o', token.value)
             return this.renderTokens(
-                // token.value is partial name and also partial url
-                // In fact, the partial has been parsed when
-                // collectAndResolveDependencies and we fetch cache this time
-                this.parse(value, undefined, token, token.value),
-                token.params.context != null
-                    ? context.push(data)
-                    : context,
+                tokens,
+                subContext,
                 value
             )
         }
