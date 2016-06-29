@@ -123,10 +123,10 @@ function createProject(name) {
     name = names[names.length - 1]
     // 1. write project config file
     tasks.push(util.write(
-        path.join(projectRoot, '.config.yml'),
+        path.join(projectRoot, 'project.yaml'),
         generateProjectConfig(cfg),
         true
-    ).then(() => log('Config file ".config.yml" created.')))
+    ).then(() => log('Config file "project.yaml" created.')))
 
     // 2. create directories
     tasks.push(

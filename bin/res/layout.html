@@ -1,5 +1,5 @@
-{{> header }}
-    <link rel="stylesheet" href="/css/app.css" media="screen" charset="utf-8">
+    {{> locale:header }}
+    {{css "../static/css/app.css"}}
 </head>
 <body>
     <!--[if lt IE 9]>
@@ -7,4 +7,4 @@
     <![endif]-->
 
     {{{body}}}
-{{> footer }}
+{{> locale:footer }}
