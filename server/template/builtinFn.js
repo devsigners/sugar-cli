@@ -14,7 +14,7 @@ const {
     isEmpty,
     isFunction,
     SafeString
-} = require('sugar-template/src/utils')
+} = require('sugar-template/lib/utils')
 
 const httpResRe = /(https?:)\/\/.test(url)/i
 

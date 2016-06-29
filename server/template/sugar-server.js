@@ -3,16 +3,16 @@ const {
     typeStr,
     escapeHtml,
     SafeString
-} = require('sugar-template/src/utils')
+} = require('sugar-template/lib/utils')
 
 const defaultWriter = new ServerWriter()
 
 // register built-in helpers
-require('sugar-template/src/helpers/if')(defaultWriter)
-require('sugar-template/src/helpers/each')(defaultWriter)
+require('sugar-template/lib/helpers/if')(defaultWriter)
+require('sugar-template/lib/helpers/each')(defaultWriter)
 require('./builtinFn')(defaultWriter)
 // register built-in filters
-require('sugar-template/src/filters/stringTransform')(defaultWriter)
+require('sugar-template/lib/filters/stringTransform')(defaultWriter)
 
 
 ServerWriter.SafeString = SafeString

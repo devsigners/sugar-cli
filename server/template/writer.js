@@ -6,9 +6,9 @@ const {
     sep
 } = require('path')
 const debug = require('debug')('sugar-template')
-const Context = require('sugar-template/src/context')
-const Writer = require('sugar-template/src/writer').Writer
-const parseTemplate = require('sugar-template/src/parser')
+const Context = require('sugar-template/lib/context')
+const Writer = require('sugar-template/lib/writer').Writer
+const parseTemplate = require('sugar-template/lib/parser')
 const {
     read,
     list,
@@ -23,7 +23,7 @@ const {
     isRawValue,
     escapeHtml,
     getValueFromString
-} = require('sugar-template/src/utils')
+} = require('sugar-template/lib/utils')
 
 function checkUrl(token) {
     if (token.url) return token.url
