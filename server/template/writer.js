@@ -41,7 +41,6 @@ class ServerWriter extends Writer {
         this.helpers = {}
         this.filters = {}
         this.partials = {}
-        this.cache.$$map = {}
         this.registerPartial('__plain_layout__.ext', '{{{body}}}')
     }
     installHelper(name, fileUrl) {
@@ -119,7 +118,6 @@ class ServerWriter extends Writer {
         debug(`[render] Enter renderTemplate:\n\turl is %o\n\tprojectDir is %o`, url, projectDir)
         return read(url).then(template => {
             const tokens = this.parse(template, undefined, undefined, url)
-            this.cache.$$map[url] = 'template'
             const promises = []
             let layout, layoutContent, isFakeLayoutUrl
             if (tokens.metadata) {
@@ -143,6 +141,10 @@ class ServerWriter extends Writer {
                     }))
                 }
                 layout = tokens.metadata.layout
+            }
+            // Check if template startsWith '<!DOCTYPE', if is, set layout to false
+            if (/^\s*<!doctype\s+/i.test(template)) {
+                layout = false
             }
 
             if (layout == null) {
