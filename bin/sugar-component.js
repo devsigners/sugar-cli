@@ -1,9 +1,21 @@
 #!/usr/bin/env node
 
-const path = require('path')
+const {
+    join,
+    sep,
+    dirname
+} = require('path')
 const colors = require('colors') // eslint-disable-line
 const program = require('./command')
-const util = require('../utils')
+const {
+    statSync,
+    exist,
+    rm,
+    list,
+    write,
+    toYaml,
+    isPlainObject
+} = require('../utils')
 const log = require('./logger')('sugar-component')
 
 program
@@ -36,17 +48,21 @@ function deleteComponent(dir) {
         logHelpInfo(`When delete component, name is required.`, 'Usage: $ sugar component <name> -d')
         process.exit(0)
     }
-    util.exist(dir).then(() => {
-        return util.exist(path.join(dir, 'component.json'))
-    }, () => {
-        logHelpInfo(`Not exist dir "${dir}"`)
+    let stat = statSync(dir)
+    if (!stat || !stat.isDirectory()) {
+        log(`"${dir}" is not exist or not directory`.red)
         process.exit(0)
-    }).then(() => {
-        return util.rm(dir)
-    }, () => {
-        logHelpInfo(`"${dir}" is not component.`)
+    }
+
+    if (
+        !statSync(join(dir, 'component.json'))
+        && !statSync(join(dir, 'component.yml'))
+        && !statSync(join(dir, 'component.yaml'))
+    ) {
+        log(`Found no component config file, wont delete it.`.red)
         process.exit(0)
-    }).then(() => {
+    }
+    rm(dir).then(() => {
         log(`Successfully delete component "${dir}"!`)
     }).catch((err) => {
         log(err.toString(), 'red')
@@ -54,11 +70,15 @@ function deleteComponent(dir) {
 }
 
 function listComponents(dir = '') {
-    util.list(path.join(process.cwd(), dir), [
+    list(join(process.cwd(), dir), [
         '*/component.json',
-        '!node_modules/component.json'
+        '!node_modules/component.json',
+        '*/component.yml',
+        '!node_modules/component.yml',
+        '*/component.yaml',
+        '!node_modules/component.yaml'
     ]).then((files) => {
-        files = files.map(file => file.substring(0, file.length - 15))
+        files = files.map(file => dirname(file))
         if (files.length) {
             log(`Find ${files.length} ${
                 files.length > 1 ? 'components' : 'component'
@@ -74,7 +94,7 @@ function createComponent(name) {
         logHelpInfo(`When create component, name is required.`, 'Usage: $ sugar component <name> [options]')
         process.exit(0)
     }
-    let names = name.split(path.sep)
+    let names = name.split(sep)
     if (!names[0]) {
         logHelpInfo(`Maybe name (${name}) is invalid?`, 'We prefer "component"|"dir/component" to be name.')
         process.exit(0)
@@ -82,36 +102,28 @@ function createComponent(name) {
     if (!names[names.length - 1]) {
         names = names.slice(0, -1)
     }
-    const dirRoot = path.join(process.cwd(), name)
+    const dirRoot = join(process.cwd(), name)
     name = names[names.length - 1]
 
     // check states
     let defaultState
-    const states = program.states.map((s, i) => {
+    const states = {}
+    program.states.forEach((s, i) => {
         const tmp = s.split(',')
         if (i === 0) {
             defaultState = tmp[0]
         }
-        return {
-            file: tmp[0],
-            name: tmp[1]
-        }
-    }).reduce((pre, cur) => {
-        pre[cur.file] = cur
-        return pre
-    }, {})
-    if (util.isPlainObject(states)) {
-        states.default = {
-            file: 'default',
-            name: '默认'
-        }
+        states[tmp[0]] = tmp[1]
+    })
+    if (isPlainObject(states)) {
+        states.default = '默认'
         defaultState = 'default'
     }
 
     const tasks = []
     // 1. write component config file
-    tasks.push(util.write(
-        path.join(dirRoot, 'component.json'),
+    tasks.push(write(
+        join(dirRoot, 'component.yml'),
         generateComponentConfig(
             program.title || name,
             states,
@@ -119,15 +131,15 @@ function createComponent(name) {
             defaultState
         ),
         true
-    ).then(() => log(`"component.json" created.`)))
+    ).then(() => log(`"component.yml" created.`)))
 
     // 2. create html file for states
     for (const s in states) {
-        tasks.push(util.write(
-            path.join(dirRoot, states[s].file + '.html'),
-            `<!-- __component_key__={{__c_${name}__._key}} -->`,
+        tasks.push(write(
+            join(dirRoot, s + '.html'),
+            `<!-- write content [state: ${s}] here -->`,
             true
-        ).then(() => log(`"${states[s].file}.html" created.`)))
+        ).then(() => log(`"${s}.html" created.`)))
     }
 
     // TODO: 3. if type is d, create index.html
@@ -141,12 +153,14 @@ function createComponent(name) {
 }
 
 function generateComponentConfig(title, states, type = 's', defaultState) {
-    return JSON.stringify({
-        name: title,
-        type,
-        states,
-        _state: defaultState
-    }, null, '\t')
+    return toYaml({
+        _config: {
+            name: title,
+            type,
+            states,
+            defaultState
+        }
+    })
 }
 
 function logHelpInfo(info, usage) {
