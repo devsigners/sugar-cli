@@ -1,0 +1,12 @@
+# _config is component's config, others is data
+_config:
+    name: flightInfo
+    # Currently only s is valid, support type for future usage
+    type: s
+    defaultState: default
+    # No file property anymore, file name is the same as state key
+    states:
+        default: 默认
+        nostop_shared: '直飞&共享航班'
+
+# here add your data, and data here can be accessed by component template
