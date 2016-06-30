@@ -46,7 +46,7 @@ function run(configFileUrl, silent) {
     if (!silent) {
         process.env.DEBUG = 'sugar-template,sugar-server'
     }
-    require(join(__dirname, '../server/cliAdapter.js'))(config)
+    require(join(__dirname, '../server'))(config)
 }
 
 function logHelpInfo(info, usage) {
