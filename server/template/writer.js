@@ -101,8 +101,8 @@ class ServerWriter extends Writer {
         debug(`[parse] url: %o, metadata: %o`, templateUrl, tokens.metadata)
         return tokens
     }
-    fetchLayout(url) {
-        debug(`[fetchLayout] url: %o`, url)
+    fetchTemplate(url) {
+        debug(`[fetchTemplate] url: %o`, url)
         let layout = this.partials[url]
         if (layout == null) {
             return read(url).then(content => {
@@ -110,13 +110,13 @@ class ServerWriter extends Writer {
                 return content
             })
         }
-        return layout
+        return Promise.resolve(layout)
     }
     renderTemplate(url, projectDir, data, localConfig, baseConfig) {
         data = data || {}
         const self = this
         debug(`[render] Enter renderTemplate:\n\turl is %o\n\tprojectDir is %o`, url, projectDir)
-        return read(url).then(template => {
+        return this.fetchTemplate(url).then(template => {
             const tokens = this.parse(template, undefined, undefined, url)
             const promises = []
             let layout, layoutContent, isFakeLayoutUrl
@@ -174,7 +174,7 @@ class ServerWriter extends Writer {
             if (!extname(layout)) {
                 layout += baseConfig.templateExt
             }
-            promises.unshift(this.fetchLayout(layout))
+            promises.unshift(this.fetchTemplate(layout))
             collectAndResolveDependencies(tokens, promises)
             return Promise.all(promises).then(([layoutContent]) => {
                 debug('[render] Body dependencies are resolved, and layout is loaded.')
