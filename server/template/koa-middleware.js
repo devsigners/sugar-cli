@@ -7,7 +7,7 @@ const debug = require('debug')('sugar-template')
 const {
     statSync,
     merge,
-    loadConfig
+    tryAndLoadConfig
 } = require('../../utils')
 const defaultWriter = require('./sugar-server')
 
@@ -40,16 +40,8 @@ const createRenderer = (instance, options) => {
 
         debug('[prepare] Resolved project dir: %s, configFileUrl: %s', projectDir, configFileUrl)
 
-        let configPromise
-        if (statSync(configFileUrl + '.yml')) {
-            configPromise = loadConfig(configFileUrl + '.yml', '.yml')
-        } else if (statSync(configFileUrl + '.yaml')) {
-            configPromise = loadConfig(configFileUrl + '.yaml', '.yaml')
-        } else if (statSync(configFileUrl + '.json')) {
-            configPromise = loadConfig(configFileUrl + '.json', '.json')
-        } else if (statSync(configFileUrl + '.js')) {
-            configPromise = loadConfig(configFileUrl + '.js', '.js')
-        } else {
+        let configPromise = tryAndLoadConfig(configFileUrl, ['.yml', '.yaml', '.json', '.js'])
+        if (!configPromise) {
             debug('[prepare] Find no project config file.')
             configPromise = Promise.resolve({})
         }

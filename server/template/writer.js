@@ -15,7 +15,8 @@ const {
     statSync,
     parseMixedYaml,
     merge,
-    loadConfig
+    loadConfig,
+    tryAndLoadConfig
 } = require('../../utils')
 const {
     isFunction,
@@ -133,12 +134,10 @@ class ServerWriter extends Writer {
                         : join(url, '..', dataFile)
                     let ext = extname(dataFile)
                     debug('[fetchData] About to read data file %o, ext %o', dataFile, ext)
-                    promises.push(loadConfig(
-                        !ext ? (dataFile + '.yml') : dataFile,
-                        ext || '.yml'
-                    ).then(d => {
-                        merge(data, d)
-                    }))
+                    promises.push(
+                        (ext ? loadConfig(dataFile, ext) : tryAndLoadConfig(dataFile, ['.yml', '.yaml', '.json', '.js']))
+                            .then(d => merge(data, d))
+                    )
                 }
                 layout = tokens.metadata.layout
             }
@@ -267,28 +266,13 @@ class ServerWriter extends Writer {
                     // recursively resolve dependencies for partial
                     const tokens = self.parse(content, undefined, token, partialUrl)
                     const promises = collectAndResolveDependencies(tokens)
-                    // check whether the partial is component or not
-                    let isComponent = false
-                    let componentUrl, componentExt
-                    if (statSync(
-                        (componentUrl = join(partialUrl, '../component.json'))
-                    )) {
-                        componentExt = '.json'
-                    } else if (statSync(
-                        (componentUrl = join(partialUrl, '../component.yml'))
-                    )) {
-                        componentExt = '.yml'
-                    } else if (statSync(
-                        (componentUrl = join(partialUrl, '../component.yaml'))
-                    )) {
-                        componentExt = '.yaml'
-                    } else if (statSync(
-                        (componentUrl = join(partialUrl, '../component.js'))
-                    )) {
-                        componentExt = '.js'
-                    }
-                    if (componentExt) {
-                        promises.push(loadConfig(componentUrl, componentExt).then(data => {
+                    const componentDataPromise = tryAndLoadConfig(
+                        join(partialUrl, '../component'),
+                        ['.yml', '.yaml', '.json', '.js']
+                    )
+
+                    if (componentDataPromise) {
+                        promises.push(componentDataPromise.then(data => {
                             tokens.metadata = merge(data, tokens.metadata)
                         }))
                     }

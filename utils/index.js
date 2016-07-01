@@ -128,6 +128,18 @@ const loadConfig = (url, type, sync) => {
     if (sync) return parse(fs.readFileSync(url))
     return read(url).then(data => parse(data))
 }
+// url has not extension
+const tryAndLoadConfig = (url, types, sync) => {
+    if (!types || !types.length) return false
+    let res = false
+    types.some(type => {
+        if (statSync(url + type)) {
+            res = loadConfig(url + type, type, sync)
+            return true
+        }
+    })
+    return res
+}
 
 const merge = (target, source, ...rest) => {
     if (rest.length) return merge(merge(target, source), ...rest)
@@ -183,5 +195,6 @@ module.exports = {
     parseYaml,
     parseMixedYaml,
     toYaml,
-    loadConfig
+    loadConfig,
+    tryAndLoadConfig
 }
