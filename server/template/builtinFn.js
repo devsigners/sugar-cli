@@ -20,7 +20,7 @@ const {
 } = require('sugar-template/lib/utils')
 
 const httpResRe = /^(https?:)\/\//i
-const resolveUrl = (url, options, realUrl) => {
+const resolveUrl = (url, options, wantFilepath) => {
     const isRelative = !isAbsolute(url)
     let src = url
     if (isRelative) {
@@ -29,8 +29,8 @@ const resolveUrl = (url, options, realUrl) => {
             if (extname(base)) base = join(base, '..')
             url = join(base, url)
         }
-        // if just want real file path
-        if (realUrl) return url
+        // if just want local file path
+        if (wantFilepath) return url
 
         if (options.hash.forceAbsolute && options.$$configRoot) {
             // Absolute to config.root -- static serve root
@@ -43,9 +43,23 @@ const resolveUrl = (url, options, realUrl) => {
     return src
 }
 
+const ctrlKeyMap = {
+    embed: true,
+    forceAbsolute: true,
+    base: true
+}
+const genAttrsStr = (hash) => {
+    let attrs = ''
+    for (let attr in hash) {
+        if (!ctrlKeyMap[attr]) attrs += ` ${attr}="${hash[attr]}"`
+    }
+    return attrs
+}
+
 module.exports = function(instance) {
     instance.registerHelper('js', function(url, options) {
-        if (httpResRe.test(url)) return new SafeString(`<script src="${url}"></script>`)
+        const attrs = genAttrsStr(options.hash)
+        if (httpResRe.test(url)) return new SafeString(`<script src="${url}" ${attrs}></script>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
         if (options.hash.embed) {
@@ -53,12 +67,13 @@ module.exports = function(instance) {
             try {
                 content = readFileSync(src, { encoding: 'utf8' })
             } catch (e) {}
-            return new SafeString(`<script>${content}</script>`)
+            return new SafeString(`<script ${attrs}>${content}</script>`)
         }
-        return new SafeString(`<script src="${src}"></script>`)
+        return new SafeString(`<script src="${src}" ${attrs}></script>`)
     })
     instance.registerHelper('css', function(url, options) {
-        if (httpResRe.test(url)) return new SafeString(`<link rel="stylesheet" href="${url}">`)
+        const attrs = genAttrsStr(options.hash)
+        if (httpResRe.test(url)) return new SafeString(`<link rel="stylesheet" href="${url}" ${attrs}>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
 
@@ -67,13 +82,13 @@ module.exports = function(instance) {
             try {
                 content = readFileSync(src, { encoding: 'utf8' })
             } catch (e) {}
-            return new SafeString(`<style>${content}</style>`)
+            return new SafeString(`<style ${attrs}>${content}</style>`)
         }
-        return new SafeString(`<link rel="stylesheet" href="${src}">`)
+        return new SafeString(`<link rel="stylesheet" href="${src}" ${attrs}>`)
     })
     instance.registerHelper('img', function(url, options) {
-        const alt = options.hash.alt || ''
-        if (httpResRe.test(url)) return new SafeString(`<img src="${url}" alt="${alt}"/>`)
+        const attrs = genAttrsStr(options.hash)
+        if (httpResRe.test(url)) return new SafeString(`<img src="${url}" ${attrs}/>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
 
@@ -83,9 +98,9 @@ module.exports = function(instance) {
                 content = readFileSync(src, { encoding: 'base64' })
                 content = `data:image/${extname(src).slice(1)};base64,` + content
             } catch (e) {}
-            return new SafeString(`<img src="${content}" alt="${alt}"/>`)
+            return new SafeString(`<img src="${content}" ${attrs}/>`)
         }
 
-        return new SafeString(`<img src="${src}" alt="${alt}"/>`)
+        return new SafeString(`<img src="${src}" ${attrs}/>`)
     })
 }
