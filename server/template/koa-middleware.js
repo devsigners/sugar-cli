@@ -7,20 +7,11 @@ const debug = require('debug')('sugar-template')
 const {
     statSync,
     merge,
+    getProjectDir,
     tryAndLoadConfig
 } = require('../../utils')
 const defaultWriter = require('./sugar-server')
 
-const getProjectDir = (url, isProjectGroup) => {
-    const parts = url.slice(1).split('/')
-    let projectDir
-    if (isProjectGroup(parts[0])) {
-        projectDir = parts.slice(0, 2).join(sep)
-    } else {
-        projectDir = parts[0]
-    }
-    return projectDir
-}
 const createRenderer = (instance, options) => {
     return function(ctx, url, locals) {
         debug('[prepare] Enter sugar-template rendering, url: %s', url)
@@ -93,3 +84,5 @@ exports = module.exports = function middleware(options) {
         })
     }
 }
+
+exports.createRenderer = createRenderer
