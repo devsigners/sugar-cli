@@ -120,12 +120,13 @@ const loadConfig = (url, type, sync) => {
     if (!type) type = path.extname(url)
     // if js, always sync
     if (type === '.js') {
-        const cfg = require(url)
-        return cfg.config || cfg
+        return sync ? require(url) : new Promise((resolve) => {
+            resolve(require(url))
+        })
     }
 
     const parse = configTypeMap[type] || parseYaml
-    if (sync) return parse(fs.readFileSync(url))
+    if (sync) return parse(fs.readFileSync(url, { encoding: 'utf8' }))
     return read(url).then(data => parse(data))
 }
 // url has not extension
@@ -180,6 +181,17 @@ const isPlainObject = (obj) => {
     return true
 }
 
+const getProjectDir = (url, isProjectGroup) => {
+    const parts = url.slice(1).split('/')
+    let projectDir
+    if (isProjectGroup(parts[0])) {
+        projectDir = parts.slice(0, 2).join(sep)
+    } else {
+        projectDir = parts[0]
+    }
+    return projectDir
+}
+
 module.exports = {
     merge,
     mergeFields,
@@ -196,5 +208,6 @@ module.exports = {
     parseMixedYaml,
     toYaml,
     loadConfig,
-    tryAndLoadConfig
+    tryAndLoadConfig,
+    getProjectDir
 }
