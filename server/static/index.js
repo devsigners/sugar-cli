@@ -1,5 +1,5 @@
-const static = require('koa-static')
+const serve = require('koa-static')
 
 module.exports = function(root, options) {
-    return static(root, options)
+    return serve(root, options)
 }

@@ -14,8 +14,8 @@ const {
     readFileSync
 } = require('fs')
 const {
-    isEmpty,
-    isFunction,
+    // isEmpty,
+    // isFunction,
     SafeString
 } = require('sugar-template/lib/utils')
 
@@ -50,7 +50,7 @@ const ctrlKeyMap = {
 }
 const genAttrsStr = (hash) => {
     let attrs = ''
-    for (let attr in hash) {
+    for (const attr in hash) {
         if (!ctrlKeyMap[attr]) attrs += ` ${attr}="${hash[attr]}"`
     }
     return attrs

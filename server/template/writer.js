@@ -1,7 +1,6 @@
 const {
     isAbsolute,
     extname,
-    relative,
     join,
     sep
 } = require('path')
@@ -11,7 +10,6 @@ const Writer = require('sugar-template/lib/writer').Writer
 const parseTemplate = require('sugar-template/lib/parser')
 const {
     read,
-    list,
     statSync,
     parseMixedYaml,
     merge,
@@ -20,7 +18,6 @@ const {
 } = require('../../utils')
 const {
     isFunction,
-    isArray,
     isRawValue,
     escapeHtml,
     getValueFromString
@@ -48,7 +45,7 @@ class ServerWriter extends Writer {
     }
     installHelper(name, fileUrl) {
         debug('[installHelper] name: %o, url: %o', name, fileUrl)
-        let defer = Promise.defer()
+        const defer = Promise.defer()
         let exist
         if (!fileUrl || fileUrl === name) {
             // search from local helpers and shared helpers
@@ -72,8 +69,8 @@ class ServerWriter extends Writer {
     }
     installPartial(fileUrl, localConfig, baseConfig) {
         debug('[installPartial] url: %o', fileUrl)
-        let defer = Promise.defer()
-        let existPartial = statSync(fileUrl)
+        const defer = Promise.defer()
+        const existPartial = statSync(fileUrl)
         if (existPartial) {
             read(fileUrl).then(content => {
                 this.registerPartial(fileUrl, content)
@@ -94,7 +91,7 @@ class ServerWriter extends Writer {
             tokens = cache[template] = parseTemplate(parsed.content, tags, parentToken)
         }
         // save the url for path resolve usage
-        tokens.forEach(token => token.url = templateUrl)
+        tokens.forEach(token => (token.url = templateUrl))
 
         // attach config read from yaml head
         if (parsed && parsed.metadata) {
@@ -106,7 +103,7 @@ class ServerWriter extends Writer {
     }
     fetchTemplate(url) {
         debug(`[fetchTemplate] url: %o`, url)
-        let layout = this.partials[url]
+        const layout = this.partials[url]
         if (layout == null) {
             return read(url).then(content => {
                 this.registerPartial(url, content)
@@ -122,7 +119,7 @@ class ServerWriter extends Writer {
         return this.fetchTemplate(url).then(template => {
             const tokens = this.parse(template, undefined, undefined, url)
             const promises = []
-            let layout, layoutContent, isFakeLayoutUrl
+            let layout, isFakeLayoutUrl
             if (tokens.metadata) {
                 merge(data, tokens.metadata)
                 let dataFile = tokens.metadata.data
@@ -134,7 +131,7 @@ class ServerWriter extends Writer {
                         : isAbsolute(dataFile)
                         ? dataFile
                         : join(url, '..', dataFile)
-                    let ext = extname(dataFile)
+                    const ext = extname(dataFile)
                     debug('[fetchData] About to read data file %o, ext %o', dataFile, ext)
                     promises.push(
                         (ext ? loadConfig(dataFile, ext) : tryAndLoadConfig(dataFile, ['.yml', '.yaml', '.json', '.js']))
@@ -156,7 +153,7 @@ class ServerWriter extends Writer {
                     localConfig.defaultLayout || baseConfig.defaultLayout
                 )
             } else if (!layout) {
-                layout = '__plain_layout__.ext'//'{{{body}}}'
+                layout = '__plain_layout__.ext'// '{{{body}}}'
                 isFakeLayoutUrl = true
             } else if (layout.startsWith('locale:')) {
                 layout = join(
@@ -320,16 +317,14 @@ class ServerWriter extends Writer {
     }
     escapedValue(token, context) {
         const value = context.lookup(token.value)
-        if (value != null)
-            return escapeHtml(value)
+        if (value != null) return escapeHtml(value)
     }
     unescapedValue(token, context) {
         const value = context.lookup(token.value)
-        if (value != null)
-            return value
+        if (value != null) return value
     }
     renderPartial(token, context, originalTemplate) {
-        let value = this.partials[token.value]
+        const value = this.partials[token.value]
         if (value != null) {
             // token.value is partial name and also partial url
             // In fact, the partial has been parsed when
@@ -338,7 +333,7 @@ class ServerWriter extends Writer {
             let data = token.params.context
             let subContext
             if (data != null) {
-                let isRaw = token.params.contextIsString || isRawValue(data)
+                const isRaw = token.params.contextIsString || isRawValue(data)
                 data = isRaw ? getValueFromString(data, isRaw.preferNumber) : context.lookup(data)
                 // enable partial metadata, still not dataFile
                 // Note: if data is simple value, we still merge,
@@ -372,8 +367,7 @@ class ServerWriter extends Writer {
             }
             value = filter(value, v.hash)
         })
-        if (value != null)
-            return escapeHtml(value)
+        if (value != null) return escapeHtml(value)
     }
     renderInlineHelper(token, context) {
         const helper = this.helpers[token.value]
@@ -382,7 +376,7 @@ class ServerWriter extends Writer {
         }
         let data = token.params.context
         if (data != null) {
-            let isRaw = token.params.contextIsString || isRawValue(data)
+            const isRaw = token.params.contextIsString || isRawValue(data)
             data = isRaw ? getValueFromString(data, isRaw.preferNumber) : context.lookup(data)
         }
         const value = helper.call(
@@ -400,8 +394,7 @@ class ServerWriter extends Writer {
                 $$configRoot: token.addtionalInfo && token.addtionalInfo.configRoot
             }
         )
-        if (value != null)
-            return escapeHtml(value)
+        if (value != null) return escapeHtml(value)
     }
     renderHelper(token, context, originalTemplate) {
         const helper = this.helpers[token.value]
@@ -410,7 +403,7 @@ class ServerWriter extends Writer {
         }
         let data = token.params.context
         if (data != null) {
-            let isRaw = token.params.contextIsString || isRawValue(data)
+            const isRaw = token.params.contextIsString || isRawValue(data)
             data = isRaw ? getValueFromString(data, isRaw.preferNumber) : context.lookup(data)
         }
         return helper.call(
@@ -446,7 +439,7 @@ class ServerWriter extends Writer {
     registerHelper(name, fn) {
         if (!name) return
         if (!isFunction(fn)) {
-            fn = noop
+            fn = function() {}
         }
         this.helpers[name] = fn
     }

@@ -1,11 +1,9 @@
 const {
     extname,
-    join,
-    sep
+    join
 } = require('path')
 const debug = require('debug')('sugar-template')
 const {
-    statSync,
     merge,
     getProjectDir,
     tryAndLoadConfig
@@ -26,8 +24,8 @@ const createRenderer = (instance, options) => {
             isComponent = true
         }
         // fetch config
-        let projectDir = getProjectDir(url, options.isProjectGroup)
-        let configFileUrl = join(options.root, projectDir, options.configFilename)
+        const projectDir = getProjectDir(url, options.isProjectGroup)
+        const configFileUrl = join(options.root, projectDir, options.configFilename)
 
         debug('[prepare] Resolved project dir: %s, configFileUrl: %s', projectDir, configFileUrl)
 
