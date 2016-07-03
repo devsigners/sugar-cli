@@ -194,29 +194,7 @@ class ServerWriter extends Writer {
         }
 
         function handleHelper(token) {
-            let value = token.value
-            let containerUrl, helperUrl
-            if (value.startsWith('shared:')) {
-                value = value.slice(7)
-                helperUrl = join(baseConfig.root, baseConfig.shared, baseConfig.helper, value)
-            } else if (value.startsWith('locale:')) {
-                value = value.slice(7)
-                helperUrl = join(
-                    baseConfig.root,
-                    projectDir,
-                    localConfig.helper == null ? baseConfig.helper : localConfig.helper,
-                    value
-                )
-            } else if (isAbsolute(value)) {
-                helperUrl = value
-            } else {
-                containerUrl = checkUrl(token)
-                debug('[handleHelper] Resolved containerUrl is %o.', containerUrl)
-                if (containerUrl == null) {
-                    containerUrl = url
-                }
-                helperUrl = join(containerUrl, '..', value)
-            }
+            let helperUrl = retrieveUrl('helper', token)
             if (!extname(helperUrl)) {
                 helperUrl += '.js'
             }
@@ -239,29 +217,7 @@ class ServerWriter extends Writer {
         // overwrite partials with same name (in shared and locale).
         // Important: so we use absolute path as partials name!!!
         function handlePartial(token) {
-            let value = token.value
-            let containerUrl, partialUrl
-            if (value.startsWith('shared:')) {
-                value = value.slice(7)
-                partialUrl = join(baseConfig.root, baseConfig.shared, baseConfig.partial, value)
-            } else if (value.startsWith('locale:')) {
-                value = value.slice(7)
-                partialUrl = join(
-                    baseConfig.root,
-                    projectDir,
-                    localConfig.partial == null ? baseConfig.partial : localConfig.partial,
-                    value
-                )
-            } else if (isAbsolute(value)) {
-                partialUrl = value
-            } else {
-                containerUrl = checkUrl(token)
-                debug('[handlePartial] Resolved containerUrl is %o.', containerUrl)
-                if (containerUrl == null) {
-                    containerUrl = url
-                }
-                partialUrl = join(containerUrl, '..', value)
-            }
+            let partialUrl = retrieveUrl('partial', token)
             if (!extname(partialUrl)) {
                 partialUrl += baseConfig.templateExt
             }
@@ -285,6 +241,32 @@ class ServerWriter extends Writer {
                     }
                     return Promise.all(promises)
                 })
+        }
+
+        function retrieveUrl(type, token) {
+            let value = token.value
+            let url
+            if (value.startsWith('shared:')) {
+                value = value.slice(7)
+                url = join(baseConfig.root, baseConfig.shared, baseConfig[type], value)
+            } else if (value.startsWith('locale:')) {
+                value = value.slice(7)
+                url = join(
+                    baseConfig.root,
+                    projectDir,
+                    localConfig[type] == null ? baseConfig[type] : localConfig[type],
+                    value
+                )
+            } else if (isAbsolute(value)) {
+                url = value
+            } else {
+                let containerUrl = checkUrl(token)
+                if (containerUrl == null) {
+                    containerUrl = url
+                }
+                url = join(containerUrl, '..', value)
+            }
+            return url
         }
     }
 
