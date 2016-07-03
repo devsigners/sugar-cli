@@ -10,7 +10,7 @@ const {
     read,
     write,
     list,
-    exist,
+    statSync,
     rm,
     mkdir,
     toYaml,
@@ -56,12 +56,11 @@ function deleteProject(dir) {
         logHelpInfo(`When delete project, name is required.`, 'Usage: $ sugar project <name> -d')
         process.exit(0)
     }
-    exist(dir).then(() => {
-        return rm(dir)
-    }, () => {
+    if (!statSync(dir)) {
         logHelpInfo(`Not exist dir "${dir}"`)
         process.exit(0)
-    }).then(() => {
+    }
+    rm(dir).then(() => {
         log(`Successfully delete project "${dir}"!`)
     }).catch((err) => {
         log(err.toString(), 'red')
