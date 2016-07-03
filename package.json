@@ -1,7 +1,7 @@
 {
   "name": "sugar-cli",
-  "version": "0.0.1",
-  "description": "Cli for static page development",
+  "version": "0.1.0-beta.1",
+  "description": "Sugar tools for prototyping development",
   "main": "index.js",
   "bin": {
     "sugar": "bin/sugar.js"
@@ -17,6 +17,7 @@
   "keywords": [
     "sugar",
     "cli",
+    "prototyping",
     "sugar-develop"
   ],
   "author": "creeperyang",
