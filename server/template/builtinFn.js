@@ -69,6 +69,12 @@ module.exports = function(instance) {
             } catch (e) {}
             return new SafeString(`<script ${attrs}>${content}</script>`)
         }
+        if (instance.__setting__.makeResUrlRelative) {
+            src = isAbsolute(src) ? relative(
+                    join(options.$$page, '..'),
+                    join(options.$$configRoot, src)
+                ) : src
+        }
         return new SafeString(`<script src="${src}" ${attrs}></script>`)
     })
     instance.registerHelper('css', function(url, options) {
@@ -83,6 +89,14 @@ module.exports = function(instance) {
                 content = readFileSync(src, { encoding: 'utf8' })
             } catch (e) {}
             return new SafeString(`<style ${attrs}>${content}</style>`)
+        }
+        // support force relative setting from other config
+        // maybe the only usage case is when build static
+        if (instance.__setting__.makeResUrlRelative) {
+            src = isAbsolute(src) ? relative(
+                    join(options.$$page, '..'),
+                    join(options.$$configRoot, src)
+                ) : src
         }
         return new SafeString(`<link rel="stylesheet" href="${src}" ${attrs}>`)
     })
@@ -100,7 +114,12 @@ module.exports = function(instance) {
             } catch (e) {}
             return new SafeString(`<img src="${content}" ${attrs}/>`)
         }
-
+        if (instance.__setting__.makeResUrlRelative) {
+            src = isAbsolute(src) ? relative(
+                    join(options.$$page, '..'),
+                    join(options.$$configRoot, src)
+                ) : src
+        }
         return new SafeString(`<img src="${src}" ${attrs}/>`)
     })
 }
