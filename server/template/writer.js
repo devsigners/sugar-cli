@@ -54,11 +54,10 @@ class ServerWriter extends Writer {
         }
         return defer.promise
     }
-    installPartial(fileUrl, localConfig, baseConfig) {
+    installPartial(fileUrl) {
         debug('[installPartial] url: %o', fileUrl)
         const defer = Promise.defer()
-        const existPartial = statSync(fileUrl)
-        if (existPartial) {
+        if (statSync(fileUrl)) {
             read(fileUrl).then(content => {
                 this.registerPartial(fileUrl, content)
                 // We should parse partial content and collect dependencies
@@ -269,7 +268,7 @@ class ServerWriter extends Writer {
             token.value = token.partial = partialUrl
             debug('[handlePartial] url: %o', partialUrl)
             if (self.partials[partialUrl]) return
-            return self.installPartial(partialUrl, localConfig, baseConfig)
+            return self.installPartial(partialUrl)
                 .then(content => {
                     // recursively resolve dependencies for partial
                     const tokens = self.parse(content, undefined, token, partialUrl)
