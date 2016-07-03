@@ -2,10 +2,8 @@
 
 const {
     join,
-    sep,
     isAbsolute
 } = require('path')
-const exec = require('child_process').exec
 const colors = require('colors') // eslint-disable-line
 const program = require('./command')
 const {

@@ -185,7 +185,7 @@ const getProjectDir = (url, isProjectGroup) => {
     const parts = url.slice(1).split('/')
     let projectDir
     if (isProjectGroup(parts[0])) {
-        projectDir = parts.slice(0, 2).join(sep)
+        projectDir = parts.slice(0, 2).join(path.sep)
     } else {
         projectDir = parts[0]
     }

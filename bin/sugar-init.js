@@ -10,8 +10,7 @@ const program = require('./command')
 const {
     read,
     write,
-    mkdir,
-    statSync
+    mkdir
 } = require('../utils')
 const log = require('./logger')('sugar-init')
 
@@ -51,7 +50,7 @@ function initEnv(path, includeShared, includeDemo) {
     // 1. write project config file
     tasks.push(
         read(join(__dirname, 'res/sugar.config.js')).then(content => {
-            write(
+            return write(
                 join(envRoot, 'sugar.config.js'),
                 content,
                 true
@@ -68,7 +67,7 @@ function initEnv(path, includeShared, includeDemo) {
                     exec(`cp -r ${sharedRoot} ${envRoot}`, (err) => {
                         err ? reject(err) : resolve()
                     })
-                }).then(() => log(`Shared part created.`))
+                }).then(() => log(`Shared directory created.`))
             })
         )
     }
@@ -83,13 +82,13 @@ function initEnv(path, includeShared, includeDemo) {
                     exec(`cp -r ${demoRoot} ${envRoot}`, (err) => {
                         err ? reject(err) : resolve()
                     })
-                }).then(() => log(`Demo part created.`))
+                }).then(() => log(`Demo created.`))
             })
         )
     }
 
     Promise.all(tasks).then(() => {
-        log(`Successfully init environment "${path}"!`)
+        log(`Successfully init develop environment for "${path}"!`)
         process.exit(0)
     }).catch((err) => {
         log(err.toString(), 'red')

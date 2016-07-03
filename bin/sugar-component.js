@@ -9,7 +9,6 @@ const colors = require('colors') // eslint-disable-line
 const program = require('./command')
 const {
     statSync,
-    exist,
     rm,
     list,
     write,
@@ -19,20 +18,18 @@ const {
 const log = require('./logger')('sugar-component')
 
 program
-    .option('-d, --delete', 'delete component')
-    .option('-l, --list', 'list components of current dir')
-    .option('-t, --title [title]', 'title for component, default to name')
+    .option('-d, --delete', 'Delete component')
+    .option('-l, --list', 'List components of specified directory')
+    .option('-t, --title [title]', 'Specify title for component, default to name')
     .option(
         '-s, --states [states]',
-        `syntax like "file,name|file,name", default to "default,默认"`,
+        `Specify states, syntax like "file,name|file,name", default to "default,默认"`,
         parseList,
         []
     )
-    .option('-p, --type [type]', 'one of ["s", "d"], default to "s"')
+    .option('-p, --type [type]', 'One of ["s", "d"], default to "s"')
     .parse(process.argv)
 
-/// handle options
-// check name
 const name = program.args[0]
 
 if (program.delete) {
@@ -48,16 +45,16 @@ function deleteComponent(dir) {
         logHelpInfo(`When delete component, name is required.`, 'Usage: $ sugar component <name> -d')
         process.exit(0)
     }
-    let stat = statSync(dir)
+    const stat = statSync(dir)
     if (!stat || !stat.isDirectory()) {
         log(`"${dir}" is not exist or not directory`.red)
         process.exit(0)
     }
 
     if (
-        !statSync(join(dir, 'component.json'))
-        && !statSync(join(dir, 'component.yml'))
-        && !statSync(join(dir, 'component.yaml'))
+        !statSync(join(dir, 'component.json')) &&
+        !statSync(join(dir, 'component.yml')) &&
+        !statSync(join(dir, 'component.yaml'))
     ) {
         log(`Found no component config file, wont delete it.`.red)
         process.exit(0)
@@ -71,12 +68,9 @@ function deleteComponent(dir) {
 
 function listComponents(dir = '') {
     list(join(process.cwd(), dir), [
-        '*/component.json',
-        '!node_modules/component.json',
-        '*/component.yml',
-        '!node_modules/component.yml',
-        '*/component.yaml',
-        '!node_modules/component.yaml'
+        '*/component.{json,yml,yaml}',
+        '!node_modules/component.{json,yml,yaml}',
+        '!bower_modules/component.{json,yml,yaml}'
     ]).then((files) => {
         files = files.map(file => dirname(file))
         if (files.length) {

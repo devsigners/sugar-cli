@@ -3,10 +3,8 @@
 const {
     join,
     sep,
-    isAbsolute,
-    basename
+    isAbsolute
 } = require('path')
-const exec = require('child_process').exec
 const colors = require('colors') // eslint-disable-line
 const program = require('./command')
 const {
@@ -82,11 +80,11 @@ function build(configFileUrl, destDir, options) {
             if (!localConfig && options.strict) {
                 excludeFiles.push(file)
             } else {
-                let parts = file.split(sep)
+                const parts = file.split(sep)
                 if (
-                    parts.length > 2
-                    && (parts[1] === (localConfig && localConfig.layout || templateConfig.layout)
-                    || parts[1] === (localConfig && localConfig.partial || templateConfig.partial))
+                    parts.length > 2 &&
+                    (parts[1] === (localConfig && localConfig.layout || templateConfig.layout) ||
+                    parts[1] === (localConfig && localConfig.partial || templateConfig.partial))
                 ) {
                     excludeFiles.push(file)
                     return null
@@ -109,8 +107,8 @@ function build(configFileUrl, destDir, options) {
                 writer.__setting__.makeResUrlRelative = true
             }
             const render = createRenderer(writer, templateConfig)
-            while(len--) {
-                let file = fileList[len]
+            while (len--) {
+                const file = fileList[len]
                 promises.push(render({}, join('/', file)).then(html => {
                     log(`File ${file} processed.`)
                     return write(join(destDir, file), html, true)
@@ -132,7 +130,7 @@ function build(configFileUrl, destDir, options) {
             '**/*.{mp3,mp4,ogg,wav,aac,webm}',
             '!**/node_modules/**/*.*',
             '!**/bower_modules/**/*.*'
-        ]).then((files => {
+        ]).then(files => {
             log(`Static resources captured by pattern [${files.length}]:\n\t${
                 files.length ? files.join('\n\t') : 'None'
             }`)
@@ -143,7 +141,7 @@ function build(configFileUrl, destDir, options) {
                 })
             })
             return Promise.all(promises)
-        }))
+        })
     }).then(() => {
         log('All static resources processed!', 'green')
     }).catch(e => {
