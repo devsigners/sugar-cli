@@ -24,8 +24,6 @@ program
     .option('-d, --dest <dir>', 'Specify dest dir')
     .option('--replace-abs', 'Replace all absolute urls with relative ones')
     .option('--strict', 'Only process htmls inside dir with "project.yml"')
-    .option('--silent', 'Do not log message except error info')
-    .option('--static', 'Build template to staitc html, also process static resources')
     .on('--help', () => {
         console.log('  Examples:'.green)
         console.log()
@@ -36,7 +34,8 @@ program
 const configFileUrl = program.args[0]
 
 build(configFileUrl, program.dest || '', {
-    replaceAbs: program.replaceAbs
+    replaceAbs: program.replaceAbs,
+    strict: program.strict
 })
 
 function build(configFileUrl, destDir, options) {
@@ -80,15 +79,18 @@ function build(configFileUrl, destDir, options) {
                 ['.yml', '.yaml', '.json', '.js'],
                 true
             )
-            let excluded = false
-            let parts = file.split(sep)
-            if (
-                parts.length > 2
-                && (parts[1] === (localConfig && localConfig.layout || templateConfig.layout)
-                    || parts[1] === (localConfig && localConfig.partial || templateConfig.partial))
-            ) {
+            if (!localConfig && options.strict) {
                 excludeFiles.push(file)
-                return null
+            } else {
+                let parts = file.split(sep)
+                if (
+                    parts.length > 2
+                    && (parts[1] === (localConfig && localConfig.layout || templateConfig.layout)
+                    || parts[1] === (localConfig && localConfig.partial || templateConfig.partial))
+                ) {
+                    excludeFiles.push(file)
+                    return null
+                }
             }
             return file
         }).filter(file => !!file)
@@ -103,7 +105,9 @@ function build(configFileUrl, destDir, options) {
         if (len) {
             const promises = []
             const writer = require('../server/template/sugar-server')
-            writer.__setting__.makeResUrlRelative = true
+            if (options.replaceAbs) {
+                writer.__setting__.makeResUrlRelative = true
+            }
             const render = createRenderer(writer, templateConfig)
             while(len--) {
                 let file = fileList[len]
