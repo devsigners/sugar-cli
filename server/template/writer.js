@@ -46,24 +46,11 @@ class ServerWriter extends Writer {
     installHelper(name, fileUrl) {
         debug('[installHelper] name: %o, url: %o', name, fileUrl)
         const defer = Promise.defer()
-        let exist
-        if (!fileUrl || fileUrl === name) {
-            // search from local helpers and shared helpers
-            exist = [join(localConfig.helpers, name),
-                join(baseConfig.shared, baseConfig.helper, name)].some(url => {
-                    if (statSync(url)) {
-                        fileUrl = url
-                        return true
-                    }
-                })
-        } else {
-            exist = statSync(fileUrl)
-        }
-        if (exist) {
+        if (statSync(fileUrl)) {
             this.registerHelper(name, require(fileUrl))
             defer.resolve()
         } else {
-            defer.reject(`Helper file of [${name}] not exist!`)
+            defer.reject(`Helper file of [${fileUrl}] not exist!`)
         }
         return defer.promise
     }
@@ -209,10 +196,34 @@ class ServerWriter extends Writer {
 
         function handleHelper(token) {
             let value = token.value
-            const parts = value.split(sep)
-            let containerUrl
+            let containerUrl, helperUrl
+            if (value.startsWith('shared:')) {
+                value = value.slice(7)
+                helperUrl = join(baseConfig.root, baseConfig.shared, baseConfig.helper, value)
+            } else if (value.startsWith('locale:')) {
+                value = value.slice(7)
+                helperUrl = join(
+                    baseConfig.root,
+                    projectDir,
+                    localConfig.helper == null ? baseConfig.helper : localConfig.helper,
+                    value
+                )
+            } else if (isAbsolute(value)) {
+                helperUrl = value
+            } else {
+                containerUrl = checkUrl(token)
+                debug('[handleHelper] Resolved containerUrl is %o.', containerUrl)
+                if (containerUrl == null) {
+                    containerUrl = url
+                }
+                helperUrl = join(containerUrl, '..', value)
+            }
+            if (!extname(helperUrl)) {
+                helperUrl += '.js'
+            }
+            const parts = helperUrl.split(sep)
             if (parts.length > 1) {
-                token.value = token.helper = parts[parts.length - 1]
+                token.value = token.helper = parts[parts.length - 1].slice(0, -3)
             }
             // attach page url and config.root
             token.addtionalInfo = {
@@ -221,10 +232,8 @@ class ServerWriter extends Writer {
             }
             debug('[handleHelper] helper: %o', token.value)
             if (self.helpers[token.value]) return
-            if ((containerUrl = checkUrl(token))) {
-                value = join(containerUrl, '..', value)
-            }
-            return self.installHelper(token.value, value)
+
+            return self.installHelper(token.value, helperUrl)
         }
 
         // Partial is not like helper/filter, we should avoid
