@@ -25,10 +25,10 @@ const templateConfig = {
 
 module.exports = {
     template: templateConfig,
-    buildStatic: {
+    build: {
         // include/exclude html pages with file pattern, like `!myTmpProj/**.html`
         htmlPattern: [],
-        dest: join(root, 'front/dest'),
+        dest: join(root, 'dest'),
         port: 3001
     },
     server: {

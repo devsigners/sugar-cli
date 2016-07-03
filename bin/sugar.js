@@ -15,6 +15,7 @@ program
     .command('component <name>', 'Create, delete, list component')
     .command('project <name>', 'Create, delete, list project')
     .command('start <config>', 'Run develop server')
+    .command('build <config>', 'Build project')
 
 program.on('--help', () => {
     console.log('  Examples:'.green)
@@ -22,7 +23,9 @@ program.on('--help', () => {
     console.log('    $ sugar component passenger -t 乘客 -p s'.grey)
     console.log('')
     console.log('')
-    console.log(`★★★★★  ${pkg.author} ${pkg.name}@v${pkg.version}  ★★★★★`.green)
+    console.log(`★★★★★  ${
+        typeof pkg.author === 'string' ? pkg.author : pkg.author.name
+    } ${pkg.name}@v${pkg.version}  ★★★★★`.green)
 })
 
 program.parse(process.argv)

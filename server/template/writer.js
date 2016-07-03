@@ -36,13 +36,15 @@ function getRootToken(token) {
 }
 
 class ServerWriter extends Writer {
-    constructor() {
+    constructor(setting) {
         super()
         this.cache = {}
         this.helpers = {}
         this.filters = {}
         this.partials = {}
         this.registerPartial('__plain_layout__.ext', '{{{body}}}')
+        // writer config, control writer render behavior
+        this.__setting__ = setting || {}
     }
     installHelper(name, fileUrl) {
         debug('[installHelper] name: %o, url: %o', name, fileUrl)
@@ -392,7 +394,9 @@ class ServerWriter extends Writer {
                 hash: token.params.hash,
                 $$base: checkUrl(token),
                 $$root: getRootToken(token).url,
+                // page url
                 $$page: token.addtionalInfo && token.addtionalInfo.page,
+                // config.root
                 $$configRoot: token.addtionalInfo && token.addtionalInfo.configRoot
             }
         )
