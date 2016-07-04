@@ -46,7 +46,7 @@ class ServerWriter extends Writer {
     }
     installHelper(name, fileUrl) {
         if (this.helpers[name]) return Promise.resolve()
-        debug('[installHelper] name: %o, url: %o', name, fileUrl)
+        debug('[installHelper] %o %o', name, fileUrl)
         if (statSync(fileUrl)) {
             return Promise.resolve(this.registerHelper(name, require(fileUrl)))
         } else {
@@ -54,7 +54,7 @@ class ServerWriter extends Writer {
         }
     }
     installPartial(fileUrl) {
-        debug('[installPartial] url: %o', fileUrl)
+        debug('[installPartial] %o', fileUrl)
         return this.fetchTemplate(fileUrl)
     }
     parse(template, tags, parentToken, templateUrl) {
@@ -73,11 +73,11 @@ class ServerWriter extends Writer {
             tokens.metadata = parsed.metadata
         }
 
-        debug(`[parse] url: %o, metadata: %o`, templateUrl, tokens.metadata)
+        debug(`[parse] %o metadata: %o`, templateUrl, tokens.metadata)
         return tokens
     }
     fetchTemplate(url) {
-        debug(`[fetchTemplate] url: %o`, url)
+        debug(`[fetchTemplate] %o`, url)
         const layout = this.partials[url]
         if (layout == null) {
             return read(url).then(content => {
@@ -94,13 +94,13 @@ class ServerWriter extends Writer {
             }
             exts = [exts]
         }
+        debug(`[fetchData] %o`, url)
         let data
         const cached = exts.some(ext => {
             data = this.data[url + ext]
             if (data) return true
         })
         if (cached) return Promise.resolve(data)
-        debug(`[fetchData] url: %o`, url)
         const back = {}
         data = tryAndLoadConfig(url, exts, sync, back)
         this.data[url + back.ext] = data // is promise if sync is false
@@ -109,7 +109,7 @@ class ServerWriter extends Writer {
     renderTemplate(url, projectDir, data, localConfig, baseConfig) {
         data = data || {}
         const self = this
-        debug(`[render] Enter renderTemplate:\n\turl is %o\n\tprojectDir is %o`, url, projectDir)
+        debug(`[render] renderTemplate:\n\turl: %o\n\tprojectDir: %o`, url, projectDir)
         return this.fetchTemplate(url).then(template => {
             const tokens = this.parse(template, undefined, undefined, url)
             const promises = []
@@ -119,10 +119,8 @@ class ServerWriter extends Writer {
                 let dataFile = tokens.metadata.data
                 if (dataFile) {
                     dataFile = retrieveUrl('data', { value: dataFile })
-                    const ext = extname(dataFile)
-                    debug('[fetchData] About to read data file %o, ext %o', dataFile, ext)
                     promises.push(
-                        this.fetchData(dataFile, ext || ['.yml', '.yaml', '.json', '.js'])
+                        this.fetchData(dataFile, extname(dataFile) || ['.yml', '.yaml', '.json', '.js'])
                             .then(d => merge(data, d))
                     )
                 }
@@ -204,7 +202,7 @@ class ServerWriter extends Writer {
             if (parts.length > 1) {
                 token.value = token.helper = parts[parts.length - 1].slice(0, -3)
             }
-            debug('[handleHelper] helper: %o', token.value)
+            debug('[handleHelper] %o', token.value)
             // attach page url and config.root, helper may use it
             token.addtionalInfo = {
                 page: url,
@@ -222,7 +220,7 @@ class ServerWriter extends Writer {
                 partialUrl += baseConfig.templateExt
             }
             token.value = token.partial = partialUrl
-            debug('[handlePartial] url: %o', partialUrl)
+            debug('[handlePartial] %o', partialUrl)
             if (self.partials[partialUrl]) return
             return self.installPartial(partialUrl)
                 .then(content => {
@@ -338,7 +336,7 @@ class ServerWriter extends Writer {
             } else {
                 subContext = tokens.metadata ? context.push(tokens.metadata) : context
             }
-            debug('[renderPartial] partial: %o', token.value)
+            debug('[renderPartial] %o', token.value)
             return this.renderTokens(
                 tokens,
                 subContext,

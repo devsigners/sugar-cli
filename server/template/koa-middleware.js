@@ -11,7 +11,7 @@ const defaultWriter = require('./sugar-server')
 
 const createRenderer = (instance, options) => {
     return function(ctx, url, locals) {
-        debug('[prepare] Enter sugar-template rendering, url: %s', url)
+        debug('[prepare] Enter rendering, %s', url)
 
         locals = locals || {}
         merge(locals, ctx.state, instance.locals)
@@ -26,7 +26,7 @@ const createRenderer = (instance, options) => {
         const projectDir = getProjectDir(url, options.isProjectGroup)
         const configFileUrl = join(options.root, projectDir, options.configFilename)
 
-        debug('[prepare] Resolved project dir: %s, configFileUrl: %s', projectDir, configFileUrl)
+        debug('[prepare] projectDir: %s, configFileUrl: %s', projectDir, configFileUrl)
 
         let configPromise = instance.fetchData(configFileUrl, ['.yml', '.yaml', '.json', '.js'])
         if (!configPromise) {
@@ -37,7 +37,7 @@ const createRenderer = (instance, options) => {
         let fileUrl
         if (isComponent) {
             fileUrl = join(options.root, projectDir, '__component_viewer__.ext')
-            debug('[prepare] Attempt to render component,\n\turl %o\n\tfileUrl', url, fileUrl)
+            debug('[prepare] Attempt to render component,\n\turl %o\n\tfileUrl %o', url, fileUrl)
             instance.registerPartial(fileUrl, `
                 ---
                 layout: false
