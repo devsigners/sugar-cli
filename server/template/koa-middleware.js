@@ -1,6 +1,8 @@
 const {
     extname,
-    join
+    join,
+    dirname,
+    basename
 } = require('path')
 const debug = require('debug')('sugar-template')
 const {
@@ -36,13 +38,13 @@ const createRenderer = (instance, options) => {
 
         let fileUrl
         if (isComponent) {
-            fileUrl = join(options.root, projectDir, '__component_viewer__.ext')
+            fileUrl = join(options.root, dirname(url), '__component_viewer__.ext')
             debug('[prepare] Attempt to render component,\n\turl %o\n\tfileUrl %o', url, fileUrl)
             instance.registerPartial(fileUrl, `
                 ---
                 layout: false
                 ---
-                {{> ${url.slice(projectDir.length + 2)} }}
+                {{> ./${basename(url)} }}
             `)
         } else {
             fileUrl = join(options.root, url, extname(url) ? '' : 'index.html')
