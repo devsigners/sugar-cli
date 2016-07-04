@@ -56,17 +56,7 @@ class ServerWriter extends Writer {
     }
     installPartial(fileUrl) {
         debug('[installPartial] url: %o', fileUrl)
-        const defer = Promise.defer()
-        if (statSync(fileUrl)) {
-            read(fileUrl).then(content => {
-                this.registerPartial(fileUrl, content)
-                // We should parse partial content and collect dependencies
-                defer.resolve(content)
-            })
-        } else {
-            defer.reject(`Partial file of [${fileUrl}] not exist!`)
-        }
-        return defer.promise
+        return this.fetchTemplate(fileUrl)
     }
     parse(template, tags, parentToken, templateUrl) {
         const cache = this.cache
