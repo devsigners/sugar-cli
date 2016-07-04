@@ -13,7 +13,6 @@ const {
     statSync,
     parseMixedYaml,
     merge,
-    loadConfig,
     tryAndLoadConfig
 } = require('../../utils')
 const {
@@ -40,6 +39,7 @@ class ServerWriter extends Writer {
         this.helpers = {} // url --> helper fn
         this.filters = {} // url --> filter fn
         this.partials = {}// url --> partial string
+        this.data = {}    // url --> data|promise
         this.registerPartial('__plain_layout__.ext', '{{{body}}}')
         // addtional writer config, control writer render behavior
         this.__setting__ = setting || {}
@@ -87,6 +87,25 @@ class ServerWriter extends Writer {
         }
         return Promise.resolve(layout)
     }
+    fetchData(url, exts, sync) {
+        if (typeof exts === 'string') {
+            if (extname(url) === exts) {
+                url = url.slice(0, -exts.length)
+            }
+            exts = [exts]
+        }
+        let data
+        const cached = exts.some(ext => {
+            data = this.data[url + ext]
+            if (data) return true
+        })
+        if (cached) return Promise.resolve(data)
+        debug(`[fetchData] url: %o`, url)
+        const back = {}
+        data = tryAndLoadConfig(url, exts, sync, back)
+        this.data[url + back.ext] = data // is promise if sync is false
+        return data
+    }
     renderTemplate(url, projectDir, data, localConfig, baseConfig) {
         data = data || {}
         const self = this
@@ -103,7 +122,7 @@ class ServerWriter extends Writer {
                     const ext = extname(dataFile)
                     debug('[fetchData] About to read data file %o, ext %o', dataFile, ext)
                     promises.push(
-                        (ext ? loadConfig(dataFile, ext) : tryAndLoadConfig(dataFile, ['.yml', '.yaml', '.json', '.js']))
+                        this.fetchData(dataFile, ext || ['.yml', '.yaml', '.json', '.js'])
                             .then(d => merge(data, d))
                     )
                 }
@@ -210,7 +229,7 @@ class ServerWriter extends Writer {
                     // recursively resolve dependencies for partial
                     const tokens = self.parse(content, undefined, token, partialUrl)
                     const promises = collectAndResolveDependencies(tokens)
-                    const componentDataPromise = tryAndLoadConfig(
+                    const componentDataPromise = self.fetchData(
                         join(partialUrl, '../component'),
                         ['.yml', '.yaml', '.json', '.js']
                     )

@@ -5,8 +5,7 @@ const {
 const debug = require('debug')('sugar-template')
 const {
     merge,
-    getProjectDir,
-    tryAndLoadConfig
+    getProjectDir
 } = require('../../utils')
 const defaultWriter = require('./sugar-server')
 
@@ -29,7 +28,7 @@ const createRenderer = (instance, options) => {
 
         debug('[prepare] Resolved project dir: %s, configFileUrl: %s', projectDir, configFileUrl)
 
-        let configPromise = tryAndLoadConfig(configFileUrl, ['.yml', '.yaml', '.json', '.js'])
+        let configPromise = instance.fetchData(configFileUrl, ['.yml', '.yaml', '.json', '.js'])
         if (!configPromise) {
             debug('[prepare] Find no project config file.')
             configPromise = Promise.resolve({})

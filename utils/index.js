@@ -130,12 +130,13 @@ const loadConfig = (url, type, sync) => {
     return read(url).then(data => parse(data))
 }
 // url has not extension
-const tryAndLoadConfig = (url, types, sync) => {
+const tryAndLoadConfig = (url, types, sync, setBack) => {
     if (!types || !types.length) return false
     let res = false
     types.some(type => {
         if (statSync(url + type)) {
             res = loadConfig(url + type, type, sync)
+            setBack && (setBack.ext = type) // inner usage
             return true
         }
     })
