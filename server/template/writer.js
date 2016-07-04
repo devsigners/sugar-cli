@@ -35,24 +35,23 @@ function getRootToken(token) {
 class ServerWriter extends Writer {
     constructor(setting) {
         super()
-        this.cache = {}
-        this.helpers = {}
-        this.filters = {}
-        this.partials = {}
+        // TODO: control cache to prevent memory leak
+        this.cache = {}   // template --> tokens
+        this.helpers = {} // url --> helper fn
+        this.filters = {} // url --> filter fn
+        this.partials = {}// url --> partial string
         this.registerPartial('__plain_layout__.ext', '{{{body}}}')
-        // writer config, control writer render behavior
+        // addtional writer config, control writer render behavior
         this.__setting__ = setting || {}
     }
     installHelper(name, fileUrl) {
+        if (this.helpers[name]) return Promise.resolve()
         debug('[installHelper] name: %o, url: %o', name, fileUrl)
-        const defer = Promise.defer()
         if (statSync(fileUrl)) {
-            this.registerHelper(name, require(fileUrl))
-            defer.resolve()
+            return Promise.resolve(this.registerHelper(name, require(fileUrl)))
         } else {
-            defer.reject(`Helper file of [${fileUrl}] not exist!`)
+            return Promise.reject(`Helper of [${fileUrl}] not exist!`)
         }
-        return defer.promise
     }
     installPartial(fileUrl) {
         debug('[installPartial] url: %o', fileUrl)
@@ -186,14 +185,12 @@ class ServerWriter extends Writer {
             if (parts.length > 1) {
                 token.value = token.helper = parts[parts.length - 1].slice(0, -3)
             }
-            // attach page url and config.root
+            debug('[handleHelper] helper: %o', token.value)
+            // attach page url and config.root, helper may use it
             token.addtionalInfo = {
                 page: url,
                 configRoot: baseConfig.root
             }
-            debug('[handleHelper] helper: %o', token.value)
-            if (self.helpers[token.value]) return
-
             return self.installHelper(token.value, helperUrl)
         }
 
