@@ -13,6 +13,7 @@ const templateConfig = {
     },
     templateExt: '.html',
     configFilename: 'project', // automatically try .json, .yml, .yaml
+    disableCache: true, // default disable cache
 
     helper: 'helpers',
     data: 'data',
