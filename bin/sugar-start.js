@@ -13,6 +13,9 @@ const log = require('./logger')('sugar-dev-server')
 
 program
     .option('-s, --silent', 'Do not log message except error info')
+    .option('-w, --watch [files]', 'Enable watch and livereload, optional specify watch files with glob')
+    .option('--watch-files <files>', 'Specify watch files with glob, like "**/*.html,**/*.css"')
+    .option('--watch-port <port>', 'Specify livereload server port', parseInt)
     .on('--help', () => {
         console.log('  Examples:'.green)
         console.log()
@@ -22,9 +25,13 @@ program
 
 const configFileUrl = program.args[0]
 
-run(configFileUrl)
+run(configFileUrl, program.silent, {
+    watch: !!program.watch,
+    files: program.watchFiles ? program.watchFiles.split(',') : ['**/*.css', '**/*.js', '**/*.html'],
+    port: program.watchPort
+})
 
-function run(configFileUrl, silent) {
+function run(configFileUrl, silent, watch) {
     if (!configFileUrl) {
         logHelpInfo(`When run develop server, configFileUrl is required.`, 'Usage: $ sugar start <configFileUrl> [options]')
         process.exit(0)
@@ -42,7 +49,11 @@ function run(configFileUrl, silent) {
     }
 
     if (!silent) {
-        process.env.DEBUG = 'sugar-template,sugar-server'
+        process.env.DEBUG = 'sugar-template,sugar-server,livereload'
+    }
+
+    if (watch.watch) {
+        config.watch = watch
     }
     require(join(__dirname, '../server'))(config)
 }
