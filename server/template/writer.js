@@ -100,13 +100,7 @@ class ServerWriter extends Writer {
                 merge(data, tokens.metadata)
                 let dataFile = tokens.metadata.data
                 if (dataFile) {
-                    dataFile = dataFile.startsWith('shared:')
-                        ? join(baseConfig.root, baseConfig.shared, baseConfig.data, dataFile.slice(7))
-                        : dataFile.startsWith('locale:')
-                        ? join(baseConfig.root, projectDir, localConfig.data == null ? baseConfig.data : localConfig.data, dataFile.slice(7))
-                        : isAbsolute(dataFile)
-                        ? dataFile
-                        : join(url, '..', dataFile)
+                    dataFile = retrieveUrl('data', { value: dataFile })
                     const ext = extname(dataFile)
                     debug('[fetchData] About to read data file %o, ext %o', dataFile, ext)
                     promises.push(
