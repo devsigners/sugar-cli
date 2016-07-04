@@ -79,7 +79,10 @@ class ServerWriter extends Writer {
     fetchTemplate(url) {
         debug(`[fetchTemplate] %o`, url)
         const layout = this.partials[url]
-        if (layout == null) {
+        let disableCache = this.__setting__.disableCache
+        // url ends with __.ext should always use cache
+        if (/__\.ext$/.test(url)) disableCache = false
+        if (layout == null || disableCache) {
             return read(url).then(content => {
                 this.registerPartial(url, content)
                 return content
@@ -96,11 +99,14 @@ class ServerWriter extends Writer {
         }
         debug(`[fetchData] %o`, url)
         let data
-        const cached = exts.some(ext => {
-            data = this.data[url + ext]
-            if (data) return true
-        })
-        if (cached) return Promise.resolve(data)
+        let disableCache = this.__setting__.disableCache
+        if (!disableCache) {
+            const cached = exts.some(ext => {
+                data = this.data[url + ext]
+                if (data) return true
+            })
+            if (cached) return Promise.resolve(data)
+        }
         const back = {}
         data = tryAndLoadConfig(url, exts, sync, back)
         this.data[url + back.ext] = data // is promise if sync is false
@@ -110,6 +116,9 @@ class ServerWriter extends Writer {
         data = data || {}
         const self = this
         debug(`[render] renderTemplate:\n\turl: %o\n\tprojectDir: %o`, url, projectDir)
+        if ('disableCache' in baseConfig) {
+            this.__setting__.disableCache = baseConfig.disableCache
+        }
         return this.fetchTemplate(url).then(template => {
             const tokens = this.parse(template, undefined, undefined, url)
             const promises = []
