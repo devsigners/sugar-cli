@@ -119,6 +119,7 @@ class ServerWriter extends Writer {
         if ('disableCache' in baseConfig) {
             this.__setting__.disableCache = baseConfig.disableCache
         }
+        if (this.__setting__.onrender) this.__setting__.onrender(url, localConfig, baseConfig)
         return this.fetchTemplate(url).then(template => {
             const tokens = this.parse(template, undefined, undefined, url)
             const promises = []

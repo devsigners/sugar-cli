@@ -57,11 +57,18 @@ const genAttrsStr = (hash) => {
 }
 
 module.exports = function(instance) {
+    let record
+    instance.__setting__.onrender = function(url) {
+        record = {}
+    }
     instance.registerHelper('js', function(url, options) {
         const attrs = genAttrsStr(options.hash)
         if (httpResRe.test(url)) return new SafeString(`<script src="${url}" ${attrs}></script>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
+        // prevent duplicate
+        if (record[src]) return
+        record[src] = true
         if (options.hash.embed) {
             let content = ''
             try {
@@ -82,7 +89,8 @@ module.exports = function(instance) {
         if (httpResRe.test(url)) return new SafeString(`<link rel="stylesheet" href="${url}" ${attrs}>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
-
+        if (record[src]) return
+        record[src] = true
         if (options.hash.embed) {
             let content = ''
             try {
@@ -105,7 +113,8 @@ module.exports = function(instance) {
         if (httpResRe.test(url)) return new SafeString(`<img src="${url}" ${attrs}/>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
-
+        if (record[src]) return
+        record[src] = true
         if (options.hash.embed) {
             let content = ''
             try {
