@@ -141,28 +141,14 @@ class ServerWriter extends Writer {
             }
 
             if (layout == null) {
-                layout = join(
-                    baseConfig.root,
-                    projectDir,
-                    localConfig.layout == null ? baseConfig.layout : localConfig.layout,
-                    localConfig.defaultLayout || baseConfig.defaultLayout
-                )
+                layout = 'locale:' + (localConfig.defaultLayout || baseConfig.defaultLayout)
             } else if (!layout) {
                 layout = '__plain_layout__.ext'// '{{{body}}}'
                 isFakeLayoutUrl = true
-            } else if (layout.startsWith('locale:')) {
-                layout = join(
-                    baseConfig.root,
-                    projectDir,
-                    localConfig.layout == null ? baseConfig.layout : localConfig.layout,
-                    layout.slice(7)
-                )
-            } else if (layout.startsWith('shared:')) {
-                layout = join(baseConfig.root, baseConfig.shared, baseConfig.layout, layout.slice(7))
-            } else if (isAbsolute(layout)) {
-                // do nothing now, maybe resolved to baseConfig.root later?
-            } else {
-                layout = join(url, '..', layout)
+            }
+
+            if (!isFakeLayoutUrl) {
+                layout = retrieveUrl('layout', { value: layout })
             }
             if (!extname(layout)) {
                 layout += baseConfig.templateExt
