@@ -99,7 +99,7 @@ class ServerWriter extends Writer {
         }
         debug(`[fetchData] %o`, url)
         let data
-        let disableCache = this.__setting__.disableCache
+        const disableCache = this.__setting__.disableCache
         if (!disableCache) {
             const cached = exts.some(ext => {
                 data = this.data[url + ext]
@@ -252,28 +252,28 @@ class ServerWriter extends Writer {
 
         function retrieveUrl(type, token) {
             let value = token.value
-            let url
+            let resolvedUrl
             if (value.startsWith('shared:')) {
                 value = value.slice(7)
-                url = join(baseConfig.root, baseConfig.shared, baseConfig[type], value)
+                resolvedUrl = join(baseConfig.root, baseConfig.shared, baseConfig[type], value)
             } else if (value.startsWith('locale:')) {
                 value = value.slice(7)
-                url = join(
+                resolvedUrl = join(
                     baseConfig.root,
                     projectDir,
                     localConfig[type] == null ? baseConfig[type] : localConfig[type],
                     value
                 )
             } else if (isAbsolute(value)) {
-                url = value
+                resolvedUrl = value
             } else {
                 let containerUrl = checkUrl(token)
                 if (containerUrl == null) {
                     containerUrl = url
                 }
-                url = join(containerUrl, '..', value)
+                resolvedUrl = join(containerUrl, '..', value)
             }
-            return url
+            return resolvedUrl
         }
     }
 
