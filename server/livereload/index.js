@@ -19,7 +19,8 @@ class Reloader {
             log('server started on port: %o', this.port)
 
             const list = this.files
-            list.push('!node_modules/**', '!bower_modules/**')
+            // default ignore node_modules and bower_modules
+            list.push('!**/node_modules/**', '!**/bower_modules/**')
             const watcher = this.watcher = chokidar.watch(list, this.watchOptions)
 
             log(`start watch files: \n\t${list.join('\n\t')}`)
