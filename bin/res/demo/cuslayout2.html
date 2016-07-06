@@ -7,14 +7,14 @@ list:
     - 易学
 ---
 
-<article style="padding: 12px 0 64px;">
-    <h1>测试custom layout，`layout: shared:simple.html`</h1>
-    <p>顺便测试dataFile，yaml head data，内置helper。</p>
+<article>
+    <p>布局是`shared/layouts/simple.html`</p>
+    <h1>使用非默认layout</h1>
+    <p>顺便测试dataFile，yaml head data，内置helper...</p>
     <br>
-    <br>
-    <pre style="text-align: left;max-width: 320px;margin: auto;">
+    <p style="color: #999;">
         {{#each list}}
-        $$index: {{$$index}}, value: {{.}}
+        $$index: {{$$index}}, value: {{.}}<br>
         {{/each}}
-    </pre>
+    </p>
 </article>

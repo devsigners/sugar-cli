@@ -1,0 +1,9 @@
+.copyright img {
+    width: 20px;
+    vertical-align: bottom;
+}
+.author {
+    color: inherit;
+    text-decoration: none;
+    line-height: 20px;
+}

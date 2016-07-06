@@ -9,19 +9,42 @@ layout: false
     <meta charset='utf8'>
     {{css "../shared/static/styles/app.css"}}
     {{css "static/css/main.css"}}
+    <style media="screen">
+        code {
+            font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            color: #999;
+        }
+        pre {
+            text-align: left;
+        }
+        li {
+            list-style: none;
+            text-align: left;
+        }
+    </style>
 </head>
-<body style="text-align: center;">
-    <h1>这个页面是纯静态页</h1>
-    <p>关闭layout即可避免页面被嵌入布局中，怎么关闭？</p>
-    <p>
-        在页面头部加入以下代码：
-    </p>
-    <pre style="text-align: left;max-width: 100px;margin: auto;">
-        <code>
+<body style="text-align: center; overflow: hidden; width: 300px;">
+    <p>本页面没有使用布局layout</p>
+    <h1>怎么禁止使用layout？</h1>
+    <ul>
+        <li>
+            1. 在页面头部加入以下代码（显式）：
+            <pre>
+                <code>
 ---
 layout: false
 ---
-        </code>
-    </pre>
+                </code>
+            </pre>
+        </li>
+        <li>
+            2. 页面文本以doctype开始（隐式）：
+            <pre>
+                <code>
+&lt;!DOCTYPE ...&gt;
+                </code>
+            </pre>
+        </li>
+    </ul>
 </body>
 </html>
