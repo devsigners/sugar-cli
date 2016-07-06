@@ -4,6 +4,7 @@ const {
     join,
     sep
 } = require('path')
+const EventEmitter = require('events')
 const debug = require('debug')('sugar-template')
 const Context = require('sugar-template/lib/context')
 const Writer = require('sugar-template/lib/writer').Writer
@@ -34,6 +35,7 @@ function getRootToken(token) {
 class ServerWriter extends Writer {
     constructor(setting) {
         super()
+        EventEmitter.call(this)
         // TODO: control cache to prevent memory leak
         this.cache = {}   // template --> tokens
         this.helpers = {} // url --> helper fn
@@ -42,7 +44,8 @@ class ServerWriter extends Writer {
         this.data = {}    // url --> data|promise
         this.registerPartial('__plain_layout__.ext', '{{{body}}}')
         // addtional writer config, control writer render behavior
-        this.__setting__ = setting || {}
+        this.__setting__ = setting || { resSmartPos: true }
+        this.emit('init')
     }
     installHelper(name, fileUrl) {
         if (this.helpers[name]) return Promise.resolve()
@@ -120,7 +123,7 @@ class ServerWriter extends Writer {
         if ('disableCache' in baseConfig) {
             this.__setting__.disableCache = baseConfig.disableCache
         }
-        if (this.__setting__.onrender) this.__setting__.onrender(url, localConfig, baseConfig)
+        this.emit('renderstart', { url, localConfig, baseConfig, projectDir })
         return this.fetchTemplate(url).then(template => {
             const tokens = this.parse(template, undefined, undefined, url)
             const promises = []
@@ -170,10 +173,14 @@ class ServerWriter extends Writer {
             const promises = collectAndResolveDependencies(layoutTokens)
             return Promise.all(promises).then(() => {
                 debug('[render] Layout dependencies are resolved, then render layout.')
-                return this.renderTokens(layoutTokens, ctx.push(
-                    // enable layout metadata, but no dataFile
-                    merge({ body }, layoutTokens.metadata)
-                ), layout)
+                const res = {
+                    html: this.renderTokens(layoutTokens, ctx.push(
+                        // enable layout metadata, but no dataFile
+                        merge({ body }, layoutTokens.metadata)
+                    ), layout)
+                }
+                this.emit('renderend', res)
+                return res.html
             })
         })
 
@@ -450,6 +457,8 @@ class ServerWriter extends Writer {
         delete this.partials[name]
     }
 }
+
+Object.assign(ServerWriter.prototype, EventEmitter.prototype)
 
 function visitTokenTree(tokens, cb) {
     cb && tokens && tokens.forEach(token => {
