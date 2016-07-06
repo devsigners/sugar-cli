@@ -55,6 +55,7 @@ class ServerWriter extends Writer {
     }
     installPartial(fileUrl) {
         debug('[installPartial] %o', fileUrl)
+        // wont check disableCache, fetchTemplate will do it
         return this.fetchTemplate(fileUrl)
     }
     parse(template, tags, parentToken, templateUrl) {
@@ -217,7 +218,6 @@ class ServerWriter extends Writer {
             }
             token.value = token.partial = partialUrl
             debug('[handlePartial] %o', partialUrl)
-            if (self.partials[partialUrl]) return
             return self.installPartial(partialUrl)
                 .then(content => {
                     // recursively resolve dependencies for partial
