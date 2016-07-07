@@ -68,8 +68,12 @@ const validate = (ctx, templateExt) => {
     return true
 }
 
-exports = module.exports = function middleware(options) {
+exports = module.exports = function middleware(options, setting) {
     debug('[middleware] Init sugar-template middleware, options is %o', options)
+    // apply setting to defaultWriter
+    if (setting) {
+        merge(defaultWriter.__setting__, setting)
+    }
     const render = createRenderer(defaultWriter, options)
     return function renderView(ctx, next) {
         if (!validate(ctx, options.templateExt)) return next()

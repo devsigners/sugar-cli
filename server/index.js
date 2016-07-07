@@ -3,12 +3,12 @@ const livereload = require('koa-livereload')
 const debug = require('debug')('sugar-server')
 const Reloader = require('./livereload')
 
-module.exports = function(config) {
+module.exports = function(config, setting) {
     debug('[server] Init server, config is %o', config)
     const sugarTemplate = require('./template/koa-middleware')
     const serve = require('./static')
     const app = new Koa()
-    app.use(sugarTemplate(config.template))
+    app.use(sugarTemplate(config.template, setting))
 
     app.use(serve(config.template.root, {
         defer: true
