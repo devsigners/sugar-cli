@@ -16,7 +16,8 @@ program
     .option('-w, --watch', 'Enable watch and livereload')
     .option('--watch-files <files>', 'Specify watch files with glob, like "**/*.html,**/*.css"')
     .option('--watch-port <port>', 'Specify livereload server port, default is 35729', parseInt)
-    .option('--no-mergecss', 'Specify livereload server port', parseInt)
+    .option('--no-merge-css', 'Disable merge css when render page')
+    .option('--no-move-res', 'Dont move css to </head> and js to </body>')
     .on('--help', () => {
         console.log('  Examples:'.green)
         console.log()
@@ -31,7 +32,8 @@ run(configFileUrl, program.silent, {
     files: program.watchFiles ? program.watchFiles.split(',') : ['**/*.css', '**/*.js', '**/*.html'],
     port: program.watchPort
 }, {
-    autoMergeCss: program.mergecss
+    autoMergeCss: program.mergeCss,
+    resSmartPos: program.moveRes
 })
 
 function run(configFileUrl, silent, watch, setting) {
