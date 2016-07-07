@@ -57,6 +57,51 @@ const genAttrsStr = (hash) => {
     return attrs
 }
 
+const mergeStyles = (list, config, pageUrl, project, map) => {
+    const sharedStyles = []
+    const localeStyles = []
+    let sharedIndexes = []
+    let localeIndexes = []
+    list.forEach((url, i) => {
+        if (isAbsolute(url)) {
+            const absUrl = join(config.root, url.slice(1))
+            if (url.startsWith(`/${config.shared}/`)) {
+                sharedStyles.push(absUrl)
+                sharedIndexes.push(i)
+            } else {
+                localeStyles.push(absUrl)
+                localeIndexes.push(i)
+            }
+        } else {
+            const absUrl = resolve(join(pageUrl, '..'), url)
+            if (relative(config.root, absUrl).startsWith(`${config.shared}/`)) {
+                sharedStyles.push(absUrl)
+                sharedIndexes.push(i)
+            } else {
+                localeStyles.push(absUrl)
+                localeIndexes.push(i)
+            }
+        }
+    })
+    const name = basename(pageUrl, config.templateExt)
+    const mergedStyles = []
+    if (sharedStyles.length > 1) {
+        const mergedShareStyleUrl = join(config.root, `${config.shared}/_${project}_${name}.css`)
+        writeFileSync(mergedShareStyleUrl, sharedStyles.map(url => readFileSync(url, { encoding: 'utf8' })).join('\n'))
+        mergedStyles.push(`<link rel="stylesheet" href="${relative(pageUrl, mergedShareStyleUrl)}">`)
+    } else {
+        mergedStyles.push(...sharedIndexes.map(i => map[list[i]]))
+    }
+    if (localeStyles.length > 1) {
+        const mergedLocaleStyleUrl = join(pageUrl, `../_merged_${name}.css`)
+        writeFileSync(mergedLocaleStyleUrl, localeStyles.map(url => readFileSync(url, { encoding: 'utf8' })).join('\n'))
+        mergedStyles.push(`<link rel="stylesheet" href="./_merged_${name}.css">`)
+    } else {
+        mergedStyles.push(...localeIndexes.map(i => map[list[i]]))
+    }
+    return mergedStyles
+}
+
 module.exports = function(instance) {
     let record, pageUrl, config, project
     instance.on('renderstart', ({ url, localconfig, baseConfig, projectDir }) => {
@@ -70,27 +115,14 @@ module.exports = function(instance) {
     }).on('renderend', (res) => {
         if (!res || !res.html) return
         if (record.__head__.length) {
-            const mergeStyles = [] // later merge to mergedStyle
-            const insertStyles = record.__head__.filter(url => {
-                if (isAbsolute(url) && url.startsWith(`/${config.shared}/`)) {
-                    mergeStyles.push(join(config.root, url.slice(1)))
-                    return false
-                } else {
-                    const absUrl = resolve(join(pageUrl, '..'), url)
-                    if (relative(config.root, absUrl).startsWith(`${config.shared}/`)) {
-                        mergeStyles.push(absUrl)
-                        return false
-                    }
-                }
-                return true
-            }).map(url => record[url])
-            const mergedStyleUrl = join(config.root, `${config.shared}/_${project}_${basename(pageUrl, config.templateExt)}.css`)
-            insertStyles.push(
-                `<link rel="stylesheet" href="${relative(pageUrl, mergedStyleUrl)}">`
-            )
-            writeFileSync(mergedStyleUrl, mergeStyles.map(url => readFileSync(url, { encoding: 'utf8' })).join('\n'))
+            let list
+            if (instance.__setting__.autoMergeCss && record.__head__.length > 1) {
+                list = mergeStyles(record.__head__, config, pageUrl, project, record)
+            } else {
+                list = record.__head__.map(url => record[url])
+            }
             res.html = res.html.replace(/<\/\s*head\s*>/,
-                `${insertStyles.join('\n')}</head>`)
+                `${list.join('\n')}</head>`)
         }
         if (record.__body__.length) {
             res.html = res.html.replace(/<\/\s*body\s*>/,

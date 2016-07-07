@@ -44,7 +44,10 @@ class ServerWriter extends Writer {
         this.data = {}    // url --> data|promise
         this.registerPartial('__plain_layout__.ext', '{{{body}}}')
         // addtional writer config, control writer render behavior
-        this.__setting__ = setting || { resSmartPos: true }
+        this.__setting__ = setting || {
+            resSmartPos: true,
+            autoMergeCss: true
+        }
         this.emit('init')
     }
     installHelper(name, fileUrl) {
