@@ -60,8 +60,8 @@ const genAttrsStr = (hash) => {
 const mergeStyles = (list, config, pageUrl, project, map) => {
     const sharedStyles = []
     const localeStyles = []
-    let sharedIndexes = []
-    let localeIndexes = []
+    const sharedIndexes = []
+    const localeIndexes = []
     list.forEach((url, i) => {
         if (isAbsolute(url)) {
             const absUrl = join(config.root, url.slice(1))
