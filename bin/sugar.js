@@ -15,6 +15,7 @@ program
     .command('component <name>', 'Create, delete, list component')
     .command('project <name>', 'Create, delete, list project')
     .command('start <config>', 'Run develop server')
+    .command('static', 'Run a pure static server')
     .command('build <config>', 'Build project')
 
 program.on('--help', () => {
