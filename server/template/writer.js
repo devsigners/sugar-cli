@@ -182,7 +182,7 @@ class ServerWriter extends Writer {
                         merge({ body }, layoutTokens.metadata)
                     ), layout)
                 }
-                this.emit('renderend', res)
+                this.emit('renderend', res, url)
                 return res.html
             })
         })

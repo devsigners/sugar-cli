@@ -103,21 +103,25 @@ const mergeStyles = (list, config, pageUrl, project, map) => {
 }
 
 module.exports = function(instance) {
-    let record, pageUrl, config, project
+    const PAGES_INFO = {}
     instance.on('renderstart', ({ url, localconfig, baseConfig, projectDir }) => {
-        record = {
-            __head__: [],
-            __body__: []
+        PAGES_INFO[url] = {
+            pageUrl: url,
+            project: projectDir,
+            config: baseConfig,
+            record: {
+                __head__: [],
+                __body__: []
+            }
         }
-        config = baseConfig
-        pageUrl = url
-        project = projectDir
-    }).on('renderend', (res) => {
+    }).on('renderend', (res, url) => {
         if (!res || !res.html) return
+        const info = PAGES_INFO[url]
+        const record = info.record
         if (record.__head__.length) {
             let list
             if (instance.__setting__.autoMergeCss && record.__head__.length > 1) {
-                list = mergeStyles(record.__head__, config, pageUrl, project, record)
+                list = mergeStyles(record.__head__, info.config, info.pageUrl, info.project, info.record)
             } else {
                 list = record.__head__.map(url => record[url])
             }
@@ -134,6 +138,7 @@ module.exports = function(instance) {
         if (httpResRe.test(url)) return new SafeString(`<script src="${url}" ${attrs}></script>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
+        const record = PAGES_INFO[options.$$page].record
         // prevent duplicate
         if (record[src]) return
         if (options.hash.embed) {
@@ -162,6 +167,7 @@ module.exports = function(instance) {
         if (httpResRe.test(url)) return new SafeString(`<link rel="stylesheet" href="${url}" ${attrs}>`)
 
         url = resolveUrl(url, options, options.hash.embed)
+        const record = PAGES_INFO[options.$$page].record
         if (record[url]) return
         if (options.hash.embed) {
             let content = ''
@@ -192,6 +198,7 @@ module.exports = function(instance) {
         if (httpResRe.test(url)) return new SafeString(`<img src="${url}" ${attrs}/>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
+        const record = PAGES_INFO[options.$$page].record
         if (options.hash.embed) {
             let content = ''
             try {
