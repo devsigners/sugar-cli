@@ -42,12 +42,12 @@ function build(configFileUrl, destDir, options) {
         process.exit(0)
     }
 
-    destDir = isAbsolute(destDir) ? destDir : join(process.cwd(), destDir)
-
     const config = {}
     try {
         configFileUrl = isAbsolute(configFileUrl) ? configFileUrl : join(process.cwd(), configFileUrl)
-        merge(config, require(join(__dirname, 'res/sugar.config.js')), require(configFileUrl))
+        const defaultConfig = require(join(__dirname, 'res/sugar.config.js'))
+        defaultConfig.build.dest = null // don't use defaultConfig's build path
+        merge(config, defaultConfig, require(configFileUrl))
     } catch (e) {
         log(`Can not parse config file correctly.`, 'red')
         log(`"${configFileUrl}" is invalid or not exist.`, 'gray')
@@ -57,6 +57,15 @@ function build(configFileUrl, destDir, options) {
 
     const templateConfig = config.template
     const templateExt = templateConfig.templateExt
+
+    if (!destDir) {
+        if (!config.build.dest) {
+            log(`You dont set build dest!`, 'red')
+            process.exit(0)
+        }
+        destDir = config.build.dest
+    }
+    destDir = isAbsolute(destDir) ? destDir : join(process.cwd(), destDir)
 
     list(templateConfig.root, [
         '**/*' + templateExt,
@@ -145,7 +154,10 @@ function build(configFileUrl, destDir, options) {
     }).then(() => {
         log('All static resources processed!', 'green')
     }).catch(e => {
-        console.error(e)
+        console.log()
+        log('Sorry, some errors occurred.', 'gray')
+        log(e.stack.toString(), 'red')
+        console.log()
     })
 }
 
