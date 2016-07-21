@@ -198,7 +198,6 @@ module.exports = function(instance) {
         if (httpResRe.test(url)) return new SafeString(`<img src="${url}" ${attrs}/>`)
 
         let src = resolveUrl(url, options, options.hash.embed)
-        const record = PAGES_INFO[options.$$page].record
         if (options.hash.embed) {
             let content = ''
             try {
