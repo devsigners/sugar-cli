@@ -21,7 +21,9 @@ program
 program.on('--help', () => {
     console.log('  Examples:'.green)
     console.log('')
-    console.log('    $ sugar component passenger -t 乘客 -p s'.grey)
+    console.log('    $ sugar start sugar.config.js --watch'.grey)
+    console.log('    $ sugar init uiDir'.grey)
+    console.log('    $ sugar static . --port 3333'.grey)
     console.log('')
     console.log('')
     console.log(`★★★★★  ${
