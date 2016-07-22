@@ -97,6 +97,7 @@ const mergeStyles = (list, config, pageUrl, project, map) => {
                 styles: readFileSync(cur, { encoding: 'utf8' }),
                 sourceMap: readFileSync(cur + '.map', { encoding: 'utf8' })
             }
+            return pre
         }, {}))
         writeFileSync(mergedShareStyleUrl, minified.styles)
         writeFileSync(mergedShareStyleUrl + '.map', minified.sourceMap)
