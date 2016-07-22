@@ -15,6 +15,8 @@ const {
     readFileSync,
     writeFileSync
 } = require('fs')
+const sass = require('node-sass')
+const CleanCSS = require('clean-css')
 const {
     SafeString
 } = require('sugar-template/lib/utils')
@@ -87,19 +89,45 @@ const mergeStyles = (list, config, pageUrl, project, map) => {
     const mergedStyles = []
     if (sharedStyles.length > 1) {
         const mergedShareStyleUrl = join(config.root, `${config.shared}/_${project}_${name}.css`)
-        writeFileSync(mergedShareStyleUrl, sharedStyles.map(url => readFileSync(url, { encoding: 'utf8' })).join('\n'))
+        const minified = new CleanCSS({
+            sourceMap: true,
+            target: mergedShareStyleUrl
+        }).minify(sharedStyles.reduce((pre, cur) => {
+            pre[cur] = {
+                styles: readFileSync(cur, { encoding: 'utf8' }),
+                sourceMap: readFileSync(cur + '.map', { encoding: 'utf8' })
+            }
+        }, {}))
+        writeFileSync(mergedShareStyleUrl, minified.styles)
+        writeFileSync(mergedShareStyleUrl + '.map', minified.sourceMap)
         mergedStyles.push(`<link rel="stylesheet" href="${relative(pageUrl, mergedShareStyleUrl)}">`)
     } else {
         mergedStyles.push(...sharedIndexes.map(i => map[list[i]]))
     }
     if (localeStyles.length > 1) {
         const mergedLocaleStyleUrl = join(pageUrl, `../_merged_${name}.css`)
-        writeFileSync(mergedLocaleStyleUrl, localeStyles.map(url => readFileSync(url, { encoding: 'utf8' })).join('\n'))
+        const minified = new CleanCSS({
+            sourceMap: true,
+            target: mergedLocaleStyleUrl
+        }).minify(localeStyles.reduce((pre, cur) => {
+            pre[cur] = {
+                styles: readFileSync(cur, { encoding: 'utf8' }),
+                sourceMap: readFileSync(cur + '.map', { encoding: 'utf8' })
+            }
+            return pre
+        }, {}))
+        writeFileSync(mergedLocaleStyleUrl, minified.styles.toString() + `\n/*# sourceMappingURL=_merged_${name}.css.map */`)
+        writeFileSync(mergedLocaleStyleUrl + '.map', minified.sourceMap.toString())
+
         mergedStyles.push(`<link rel="stylesheet" href="./_merged_${name}.css">`)
     } else {
         mergedStyles.push(...localeIndexes.map(i => map[list[i]]))
     }
     return mergedStyles
+}
+
+const compileSassSync = (setting) => {
+    return sass.renderSync(setting)
 }
 
 module.exports = function(instance) {
@@ -166,13 +194,32 @@ module.exports = function(instance) {
         const attrs = genAttrsStr(options.hash)
         if (httpResRe.test(url)) return new SafeString(`<link rel="stylesheet" href="${url}" ${attrs}>`)
 
+        const absPath = resolveUrl(url, options, true)
         url = resolveUrl(url, options, options.hash.embed)
         const record = PAGES_INFO[options.$$page].record
+        const isSass = url.endsWith('.scss') || url.endsWith('.sass')
+        let outFile, includePaths
+        if (isSass) {
+            url = url.replace(/s[ac]ss$/i, 'css')
+            outFile = absPath.replace(/s[ac]ss$/i, 'css')
+            includePaths = [join(options.$$page, '..'), options.$$configRoot]
+        }
         if (record[url]) return
+
         if (options.hash.embed) {
             let content = ''
             try {
-                content = readFileSync(url, { encoding: 'utf8' })
+                content = readFileSync(absPath, { encoding: 'utf8' })
+                if (isSass) {
+                    content = compileSassSync({
+                        data: content,
+                        outFile,
+                        includePaths,
+                        sourceMap: true
+                    })
+                    writeFileSync(outFile + '.map', content.map, { encoding: 'utf8' })
+                    content = content.css.toString()
+                }
             } catch (e) {}
             record[url] = `<style ${attrs}>${content}</style>`
         } else {
@@ -186,6 +233,17 @@ module.exports = function(instance) {
                     ) : src
             }
             record[url] = `<link rel="stylesheet" href="${src}" ${attrs}>`
+        }
+        // compile sass and write to the same dir
+        if (isSass) {
+            const res = compileSassSync({
+                file: absPath,
+                outFile,
+                sourceMap: true,
+                includePaths
+            })
+            writeFileSync(outFile, res.css, { encoding: 'utf8' })
+            writeFileSync(outFile + '.map', res.map, { encoding: 'utf8' })
         }
         if (options.hash.smartPos || instance.__setting__.resSmartPos) {
             record.__head__.push(url)
