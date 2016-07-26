@@ -59,7 +59,7 @@ const genAttrsStr = (hash) => {
     return attrs
 }
 
-const mergeStyles = (list, config, pageUrl, project, map) => {
+const mergeStyles = (list, config, pageUrl, project, map, setting) => {
     const sharedStyles = []
     const localeStyles = []
     const sharedIndexes = []
@@ -91,7 +91,8 @@ const mergeStyles = (list, config, pageUrl, project, map) => {
         const mergedShareStyleUrl = join(config.root, `${config.shared}/_${project}_${name}.css`)
         const minified = new CleanCSS({
             sourceMap: true,
-            target: mergedShareStyleUrl
+            target: mergedShareStyleUrl,
+            compatibility: setting.cssCompatible
         }).minify(sharedStyles.reduce((pre, cur) => {
             pre[cur] = {
                 styles: readFileSync(cur, { encoding: 'utf8' }),
@@ -150,7 +151,7 @@ module.exports = function(instance) {
         if (record.__head__.length) {
             let list
             if (instance.__setting__.autoMergeCss && record.__head__.length > 1) {
-                list = mergeStyles(record.__head__, info.config, info.pageUrl, info.project, info.record)
+                list = mergeStyles(record.__head__, info.config, info.pageUrl, info.project, info.record, instance.__setting__)
             } else {
                 list = record.__head__.map(url => record[url])
             }
