@@ -30,6 +30,15 @@ const exist = (filename) => {
     })
 }
 
+const existSync = (filename) => {
+    try {
+        fs.accessSync(filename)
+        return true
+    } catch (e) {
+        return false
+    }
+}
+
 const statSync = (url) => {
     try {
         return fs.statSync(url)
@@ -199,6 +208,7 @@ module.exports = {
     isPlainObject,
     read,
     exist,
+    existSync,
     statSync,
     mkdir,
     list,

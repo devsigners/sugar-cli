@@ -20,6 +20,9 @@ const CleanCSS = require('clean-css')
 const {
     SafeString
 } = require('sugar-template/lib/utils')
+const {
+    existSync
+} = require('../../utils')
 
 const httpResRe = /^(https?:)\/\//i
 const resolveUrl = (url, options, wantFilepath) => {
@@ -96,7 +99,9 @@ const mergeStyles = (list, config, pageUrl, project, map, setting) => {
         }).minify(sharedStyles.reduce((pre, cur) => {
             pre[cur] = {
                 styles: readFileSync(cur, { encoding: 'utf8' }),
-                sourceMap: readFileSync(cur + '.map', { encoding: 'utf8' })
+                sourceMap: existSync(cur + '.map')
+                    ? readFileSync(cur + '.map', { encoding: 'utf8' })
+                    : ''
             }
             return pre
         }, {}))
@@ -114,7 +119,9 @@ const mergeStyles = (list, config, pageUrl, project, map, setting) => {
         }).minify(localeStyles.reduce((pre, cur) => {
             pre[cur] = {
                 styles: readFileSync(cur, { encoding: 'utf8' }),
-                sourceMap: readFileSync(cur + '.map', { encoding: 'utf8' })
+                sourceMap: existSync(cur + '.map')
+                    ? readFileSync(cur + '.map', { encoding: 'utf8' })
+                    : ''
             }
             return pre
         }, {}))
