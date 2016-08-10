@@ -9,7 +9,9 @@ module.exports = function(config, setting) {
     const sugarTemplate = require('./template/koa-middleware')
     const serve = require('./static')
     const app = new Koa()
-    app.use(serveList(config.template.root))
+    if (config.template.serveIndex) {
+        app.use(serveList(config.template.root))
+    }
     app.use(sugarTemplate(config.template, setting))
 
     app.use(serve(config.template.root, {
