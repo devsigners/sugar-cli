@@ -1,6 +1,6 @@
 {
   "name": "sugar-cli",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Simple yet powerful tool for prototyping development",
   "main": "server/index.js",
   "bin": {
