@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/creeperyang/sugar-cli#readme",
   "dependencies": {
+    "autoprefixer": "^6.4.0",
     "chokidar": "^1.6.0",
     "clean-css": "^3.4.18",
     "colors": "^1.1.2",
@@ -44,6 +45,7 @@
     "koa-static": "^3.0.0",
     "mkdirp": "^0.5.1",
     "node-sass": "^3.8.0",
+    "postcss": "^5.1.2",
     "rimraf": "^2.5.2",
     "sugar-template": "^0.1.0",
     "tiny-lr": "^0.2.1",

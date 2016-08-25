@@ -1,7 +1,3 @@
-/**
- * built-in helpers/filters
- */
-
 const {
     isAbsolute,
     relative,
@@ -17,6 +13,8 @@ const {
 } = require('fs')
 const sass = require('node-sass')
 const CleanCSS = require('clean-css')
+const postcss = require('postcss')
+const autoprefixer = require('autoprefixer')
 const {
     SafeString
 } = require('sugar-template/lib/utils')
@@ -105,7 +103,8 @@ const mergeStyles = (list, config, pageUrl, project, map, setting) => {
             }
             return pre
         }, {}))
-        writeFileSync(mergedShareStyleUrl, minified.styles)
+        writeFileSync(mergedShareStyleUrl, minified.styles.toString() +
+            `\n/*# sourceMappingURL=_${project}_${name}.css.map */`)
         writeFileSync(mergedShareStyleUrl + '.map', minified.sourceMap)
         mergedStyles.push(`<link rel="stylesheet" href="${relative(pageUrl, mergedShareStyleUrl)}">`)
     } else {
@@ -125,9 +124,9 @@ const mergeStyles = (list, config, pageUrl, project, map, setting) => {
             }
             return pre
         }, {}))
-        writeFileSync(mergedLocaleStyleUrl, minified.styles.toString() + `\n/*# sourceMappingURL=_merged_${name}.css.map */`)
+        writeFileSync(mergedLocaleStyleUrl, minified.styles.toString() +
+            `\n/*# sourceMappingURL=_merged_${name}.css.map */`)
         writeFileSync(mergedLocaleStyleUrl + '.map', minified.sourceMap.toString())
-
         mergedStyles.push(`<link rel="stylesheet" href="./_merged_${name}.css">`)
     } else {
         mergedStyles.push(...localeIndexes.map(i => map[list[i]]))
@@ -138,8 +137,28 @@ const mergeStyles = (list, config, pageUrl, project, map, setting) => {
 const compileSassSync = (setting) => {
     return sass.renderSync(setting)
 }
+const compileSass = (setting) => {
+    const result = sass.renderSync(setting)
+    return postcss([
+        autoprefixer({
+            browsers: ['last 2 versions', 'android 4']
+        })
+    ]).process(result.css, {
+        from: setting.fromFile,
+        to: setting.outFile,
+        map: setting.map ? { inline: false } : false
+    }).then(res => {
+        if (!res.map) {
+            res.map = result.map
+        }
+        return res
+    })
+}
 
 module.exports = function(instance) {
+    if (!instance.helperPromises) {
+        instance.helperPromises = []
+    }
     const PAGES_INFO = {}
     instance.on('renderstart', ({ url, localconfig, baseConfig, projectDir }) => {
         PAGES_INFO[url] = {
@@ -178,21 +197,15 @@ module.exports = function(instance) {
         const record = PAGES_INFO[options.$$page].record
         // prevent duplicate
         if (record[src]) return
-        if (options.hash.embed) {
-            let content = ''
-            try {
-                content = readFileSync(src, { encoding: 'utf8' })
-            } catch (e) {}
-            record[src] = `<script ${attrs}>${content}</script>`
-        } else {
-            if (instance.__setting__.makeResUrlRelative) {
-                src = isAbsolute(src) ? relative(
-                        join(options.$$page, '..'),
-                        join(options.$$configRoot, src)
-                    ) : src
-            }
-            record[src] = `<script src="${src}" ${attrs}></script>`
+
+        if (instance.__setting__.makeResUrlRelative) {
+            src = isAbsolute(src) ? relative(
+                    join(options.$$page, '..'),
+                    join(options.$$configRoot, src)
+                ) : src
         }
+        record[src] = `<script src="${src}" ${attrs}></script>`
+
         if (options.hash.smartPos || instance.__setting__.resSmartPos) {
             record.__body__.push(url)
             return
@@ -204,55 +217,47 @@ module.exports = function(instance) {
         if (httpResRe.test(url)) return new SafeString(`<link rel="stylesheet" href="${url}" ${attrs}>`)
 
         const absPath = resolveUrl(url, options, true)
-        url = resolveUrl(url, options, options.hash.embed)
+        url = resolveUrl(url, options)
         const record = PAGES_INFO[options.$$page].record
         const isSass = url.endsWith('.scss') || url.endsWith('.sass')
         let outFile, includePaths
         if (isSass) {
             url = url.replace(/s[ac]ss$/i, 'css')
             outFile = absPath.replace(/s[ac]ss$/i, 'css')
-            includePaths = [join(options.$$page, '..'), options.$$configRoot]
+            includePaths = [join(absPath, '..'), join(options.$$page, '..'), options.$$configRoot]
         }
         if (record[url]) return
 
-        if (options.hash.embed) {
-            let content = ''
-            try {
-                content = readFileSync(absPath, { encoding: 'utf8' })
-                if (isSass) {
-                    content = compileSassSync({
-                        data: content,
-                        outFile,
-                        includePaths,
-                        sourceMap: true
-                    })
-                    writeFileSync(outFile + '.map', content.map, { encoding: 'utf8' })
-                    content = content.css.toString()
-                }
-            } catch (e) {}
-            record[url] = `<style ${attrs}>${content}</style>`
-        } else {
-            let src = url
-            // support force relative setting from other config
-            // maybe the only usage case is when build static
-            if (instance.__setting__.makeResUrlRelative) {
-                src = isAbsolute(src) ? relative(
-                        join(options.$$page, '..'),
-                        join(options.$$configRoot, src)
-                    ) : src
-            }
-            record[url] = `<link rel="stylesheet" href="${src}" ${attrs}>`
+        let src = url
+        // support force relative setting from other config
+        // maybe the only usage case is when build static
+        if (instance.__setting__.makeResUrlRelative) {
+            src = isAbsolute(src) ? relative(
+                    join(options.$$page, '..'),
+                    join(options.$$configRoot, src)
+                ) : src
         }
+        record[url] = `<link rel="stylesheet" href="${src}" ${attrs}>`
+
         // compile sass and write to the same dir
         if (isSass) {
-            const res = compileSassSync({
-                file: absPath,
+            instance.helperPromises.push(compileSass({
+                //file: absPath,
+                data: readFileSync(absPath, { encoding: 'utf8' }),
+                fromFile: absPath,
                 outFile,
                 sourceMap: true,
                 includePaths
-            })
-            writeFileSync(outFile, res.css, { encoding: 'utf8' })
-            writeFileSync(outFile + '.map', res.map, { encoding: 'utf8' })
+            }).then(function (result) {
+                writeFileSync(
+                    outFile,
+                    result.css + `\n/*# sourceMappingURL=${basename(outFile)}.map */`,
+                    { encoding: 'utf8' }
+                )
+                if (result.map) {
+                    writeFileSync(outFile + '.map', result.map, { encoding: 'utf8' })
+                }
+            }))
         }
         if (options.hash.smartPos || instance.__setting__.resSmartPos) {
             record.__head__.push(url)

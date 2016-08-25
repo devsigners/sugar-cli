@@ -183,6 +183,12 @@ class ServerWriter extends Writer {
                     ), layout)
                 }
                 this.emit('renderend', res, url)
+                if (this.helperPromises) {
+                    return Promise.all(this.helperPromises).then(() => {
+                        this.helperPromises = []
+                        return res.html
+                    })
+                }
                 return res.html
             })
         })
