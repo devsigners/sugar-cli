@@ -42,6 +42,9 @@ class Logger {
         }
         return `[${this.formatTime(date)}]`
     }
+    _getLevel (level = 'log') {
+        return `[${level}]`
+    }
     _log (message, title, level = 'log') {
         // check if we should log
         const levelNum = this.levels[level]
@@ -52,10 +55,10 @@ class Logger {
         }
         console[level](
             [
-                colors[level](this._getTime()),
-                colors[level](`[${level}]`),
-                colors[level](this._getTitle(title))
-            ].filter(v => !!v).map(v => {
+                this._getTime(),
+                this._getLevel(level),
+                this._getTitle(title)
+            ].filter(v => !!v).map(v => colors[level](v)).map(v => {
                 return this.boldPrefix ? colors.bold(v) : v
             }).concat(message).join(' ')
         )
