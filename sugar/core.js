@@ -4,7 +4,6 @@ const {
     isAbsolute,
     extname
 } = require('path')
-const debug = require('debug')('sugar')
 const fetch = require('node-fetch')
 const LRUCache = require('../helper/lru')
 const injectCoreHelpers = require('./core-helpers')
@@ -31,6 +30,7 @@ const {
     isHttpUrl
 } = require('../helper/utils')
 const renderAst = require('./renderer')
+const logger = require('../helper/logger')
 
 
 const defaultDataFileExts = ['.yml', '.yaml', '.json', '.js']
@@ -78,7 +78,7 @@ class Sugar extends EventEmitter {
         }
     }
     parse(template, templateUrl) {
-        debug(`[parse] template: %o`, templateUrl)
+        logger.log(`%s`, `parse`, template && template.slice(0, 20) + '...')
         const cache = this.cache
         let ast = cache.get(template)
         let parsed
@@ -105,7 +105,7 @@ class Sugar extends EventEmitter {
         return ast
     }
     fetchTemplate(url) {
-        debug(`[fetchTemplate] %s`, url)
+        logger.log(`%s`, `fetchTemplate`, url)
         let disableCache = this.setting.disableCache
         let tpl
         // url likes __xxx__.ext should always use cache
@@ -124,7 +124,7 @@ class Sugar extends EventEmitter {
         return Promise.resolve(tpl)
     }
     fetchData(url, exts = defaultDataFileExts) {
-        debug(`[fetchData] %s`, url)
+        logger.log(`%s`, `fetchData`, url)
         let data
         if (typeof exts === 'string') {
             // Let fetchData support http(s) url
@@ -297,7 +297,7 @@ class Sugar extends EventEmitter {
         }
 
         function collectAndResolveDependencies(ast) {
-            debug('[collectAndResolveDependencies]')
+            logger.log(``, `collectAndResolveDependencies`)
             const innerTasks = []
             traverser(ast, {
                 Partial(token) {

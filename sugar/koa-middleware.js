@@ -4,7 +4,6 @@ const {
     dirname,
     basename
 } = require('path')
-const debug = require('debug')('sugar')
 const {
     tryAndLoadData,
     merge,
@@ -13,6 +12,7 @@ const {
 const Sugar = require('./core')
 const defaultConfig = require('./config')
 const renderCore = new Sugar()
+const logger = require('../helper/logger')
 
 const createRenderer = (renderer, config) => {
     return function(ctx, locals) {
@@ -28,10 +28,9 @@ const createRenderer = (renderer, config) => {
         const projectDir = getDirectoryFromUrl(url, config.groupPattern)
         const configFileUrl = join(config.root, projectDir, config.configFilename)
 
-        debug('[middleware]\n\turl: %s \n\tproject: %s,\n\tconfig file: %s', url, projectDir, configFileUrl)
-
+        logger.log(`\n\turl: %s,\n\tproject: %s,\n\tconfig file: %s`, 'middleware', url, projectDir, configFileUrl)
         return renderer.fetchData(configFileUrl).then(localConfig => {
-            debug('[middleware] local config is %o', localConfig)
+            logger.log(`config: %j`, 'middleware', localConfig)
             return renderer.render(fileUrl, {
                 directory: projectDir,
                 data: locals,
@@ -53,7 +52,7 @@ const validate = (ctx, templateExt) => {
 }
 
 exports = module.exports = function middleware(options, setting) {
-    debug('[middleware] Setup sugar-template middleware for koa, options is %o, setting is %o', options, setting)
+    logger.log(`setup sugar middleware, options is %j, setting is %j`, 'middleware', options, setting)
     if (setting) {
         merge(renderCore.setting, setting) // apply setting to renderCore
     }
@@ -65,7 +64,7 @@ exports = module.exports = function middleware(options, setting) {
 
         return render(ctx).then((html) => {
             ctx.body = html
-            debug('[middleware] Finally attach generated html to response body.')
+            logger.log(`sugar render process finished.`, 'middleware')
             return next()
         }).catch(error => {
             console.error(error)
