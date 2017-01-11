@@ -18,7 +18,11 @@ class Logger {
             warn: 2,
             error: 3
         }
-        this.level = level == null ? 0 : level
+        if (level == null) {
+            this.level = +process.env.LOGLEVEL || 0
+        } else {
+            this.level = level
+        }
         this.title = title || 'Logger'
         this.showTime = typeof showTime === 'boolean' ? showTime : true
         this.boldPrefix = typeof boldPrefix === 'boolean' ? boldPrefix : true
