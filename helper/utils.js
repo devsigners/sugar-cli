@@ -1,4 +1,4 @@
-const { read, readSync, existSync } = require('./fs')
+const { read, readSync, existsSync } = require('./fs')
 const { sep, basename } = require('path')
 const yaml = require('yamljs')
 const minimatch = require('minimatch')
@@ -50,7 +50,7 @@ const tryAndLoadData = (url, types, sync, setBack) => {
     }
     let res
     if (types.some(type => {
-        if (existSync(url + type)) {
+        if (existsSync(url + type)) {
             res = loadData(url + type, type, sync)
             setBack && (setBack.ext = type) // inner usage
             return true
