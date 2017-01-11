@@ -19,7 +19,7 @@ const ctrlKeyMap = {
     embed: true,
     forceAbsolute: true,
     base: true,
-    smartPos: true // css move to head, js move to body
+    autoAdjustPos: true // css move to head, js move to body
 }
 
 const genAttrsStr = (hash) => {
@@ -58,7 +58,7 @@ const resolveUrl = (url, options) => {
 
 function attachPromise(res, promise, processHtml) {
     if (res.promise) {
-        promise = res.promise.then(html => {
+        res.promise = res.promise.then(html => {
             return promise.then(() => processHtml(html))
         })
     } else {
@@ -191,11 +191,58 @@ function cssPlugin(instance) {
     }
 }
 
+function jsPlugin(instance) {
+    instance.on('post-render', (res) => {
+        const list = res.resourceMap.js
+        const tasks = list.filter(v => {
+            if (!v.path) {
+                v.path = join(res.config.root, v.expectedPath)
+                v.relativePath = v.expectedPath
+            } else {
+                v.relativePath = relative(res.config.root, v.path)
+            }
+            if (v.autoAdjustPos) {
+                return true
+            }
+        }).map(v => read(v.path))
+
+        const name = basename(res.url, res.config.templateExt)
+        let targetUrl
+        attachPromise(res, Promise.all(tasks).then(files => {
+            if (!tasks.length) {
+                return
+            }
+            targetUrl = join(res.url, `../__c_${name}.js`)
+            return write(targetUrl, files.join('\n'))
+        }), (html) => {
+            if (tasks.length) {
+                return html.replace(/<\/body>/, `<script src="${
+                    basename(targetUrl)
+                }" concated></script></body>`)
+            }
+            return html
+        })
+    })
+
+    instance.registerHelper('js', jsHelper)
+
+    function jsHelper(url, options) {
+        const attrs = genAttrsStr(options.hash)
+        const map = options.resourceMap.js
+        if (isHttpUrl(url)) {
+            map[url] = false
+            return new SafeString(`<script src="${url}" ${attrs}></script>`)
+        }
+        const resolved = resolveUrl(url, options)
+        resolved.autoAdjustPos = options.hash.autoAdjustPos || instance.setting.autoAdjustPos
+        map.push(resolved)
+        return resolved.autoAdjustPos
+            ? null
+            : new SafeString(`<script src="${resolved.expectedPath}" ${attrs}></script>`)
+    }
+}
+
 module.exports = function injectCorePlugins(instance) {
     instance.registerPlugin('css', cssPlugin)
-
-    instance.registerHelper('js', function() {
-        // TODO: write js plugin
-        return new SafeString(`<script invalid></script>`)
-    })
+    instance.registerPlugin('js', jsPlugin)
 }
