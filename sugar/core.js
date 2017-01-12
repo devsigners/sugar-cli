@@ -1,27 +1,14 @@
 const EventEmitter = require('events')
-const {
-    join,
-    isAbsolute,
-    extname
-} = require('path')
+const { join, isAbsolute, extname } = require('path')
 const fetch = require('node-fetch')
 const LRUCache = require('../helper/lru')
 const injectCoreHelpers = require('./core-helpers')
 const injectCorePlugins = require('./core-plugins')
-const Token = require('sugar-template/lib/token')
 const Context = require('sugar-template/lib/context')
 
-const {
-    tokenizer,
-    parser,
-    traverser
-} = require('sugar-template/lib/compiler')
-const {
-    isFunction
-} = require('sugar-template/lib/utils')
-const {
-    read
-} = require('../helper/fs')
+const { tokenizer, parser, traverser } = require('sugar-template/lib/compiler')
+const { isFunction } = require('sugar-template/lib/utils')
+const { read } = require('../helper/fs')
 const {
     tryAndLoadData,
     parseMixedYaml,
@@ -31,32 +18,11 @@ const {
 } = require('../helper/utils')
 const renderAst = require('./renderer')
 const logger = require('../helper/logger')
-
+require('./core-init')()
 
 const defaultDataFileExts = ['.yml', '.yaml', '.json', '.js']
 const FLAG_SHARED_RE = /^\s*(shared?|common):\s*/i
 const FLAG_LOCALE_RE = /^\s*locale?:\s*/i
-
-Token.prototype.getTemplateUrl = function() {
-    if (this.type === 'Program') {
-        return this.templateUrl
-    } else if (this.parent) {
-        return this.parent.getTemplateUrl()
-    }
-    return ''
-}
-
-Token.prototype.getRootTemplateUrl = function() {
-    let parent = this
-    while (parent.parent) {
-        parent = parent.parent
-    }
-    return this.templateUrl
-}
-
-Token.prototype.shallowClone = function() {
-    return Object.assign({}, this)
-}
 
 class Sugar extends EventEmitter {
     constructor() {
