@@ -335,8 +335,17 @@ class Sugar extends EventEmitter {
         delete this.partials[name]
     }
     registerPlugin(name, plugin) {
-        this.plugins[name] = plugin
-        return plugin(this)
+        // The return value of plugin() should be function,
+        // and invoke it will unregister this plugin
+        if (!isFunction(plugin)) {
+            throw new Error('Plugin should be a function')
+        }
+        this.plugins[name] = plugin(this)
+    }
+    unregisterPlugin(name) {
+        if (name && this.plugins[name]) {
+            this.plugins[name](this)
+        }
     }
 }
 

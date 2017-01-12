@@ -67,13 +67,16 @@ function attachPromise(res, promise, processHtml) {
     return res
 }
 
-/**
- * CSS Plugin
- * 1. register css helper
- * 2. enhance css helper (support sass/less/postcss)
- */
 function cssPlugin(instance) {
-    instance.on('post-render', (res) => {
+    instance.on('post-render', onPostRender)
+    instance.registerHelper('css', cssHelper)
+    
+    return function unregister () {
+        instance.unregisterHelper('css')
+        instance.removeListener('post-render', onPostRender)
+    }
+    
+    function onPostRender (res) {
         const list = res.resourceMap.css
         const tasks = []
         const files = list.filter(v => {
@@ -163,9 +166,7 @@ function cssPlugin(instance) {
             }
             return html
         })
-    })
-
-    instance.registerHelper('css', cssHelper)
+    }
 
     function cssHelper(url, options) {
         const attrs = genAttrsStr(options.hash)
@@ -192,7 +193,15 @@ function cssPlugin(instance) {
 }
 
 function jsPlugin(instance) {
-    instance.on('post-render', (res) => {
+    instance.on('post-render', onPostRender)
+    instance.registerHelper('js', jsHelper)
+    
+    return function unregister () {
+        instance.unregisterHelper('js')
+        instance.removeListener('post-render', onPostRender)
+    }
+    
+    function onPostRender (res) {
         const list = res.resourceMap.js
         const tasks = list.filter(v => {
             if (!v.path) {
@@ -222,9 +231,7 @@ function jsPlugin(instance) {
             }
             return html
         })
-    })
-
-    instance.registerHelper('js', jsHelper)
+    }
 
     function jsHelper(url, options) {
         const attrs = genAttrsStr(options.hash)
