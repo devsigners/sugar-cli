@@ -2,7 +2,7 @@ const colors = require('colors/safe')
 const util = require('util')
 
 class Logger {
-    constructor({ theme, level, title, showTime, boldPrefix } = {}) {
+    constructor({ theme, level, title, showTime, boldPrefix, alwaysCheckLevel = true } = {}) {
         // theme
         this.theme = Object.assign({
             log: 'cyan',
@@ -18,11 +18,8 @@ class Logger {
             warn: 2,
             error: 3
         }
-        if (level == null) {
-            this.level = +process.env.LOGLEVEL || 0
-        } else {
-            this.level = level
-        }
+        this.level = level || 0
+        this.alwaysCheckLevel = alwaysCheckLevel
         this.title = title || 'Logger'
         this.showTime = typeof showTime === 'boolean' ? showTime : true
         this.boldPrefix = typeof boldPrefix === 'boolean' ? boldPrefix : true
@@ -49,6 +46,11 @@ class Logger {
         // check if we should log
         const levelNum = this.levels[level]
         if (levelNum < this.level) return
+
+        if (this.alwaysCheckLevel) {
+            const _level = +process.env.LOGLEVEL || 0
+            if (levelNum < _level) return
+        }
 
         if (typeof message !== 'string') {
             return console.log()
