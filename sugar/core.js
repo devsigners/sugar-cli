@@ -34,7 +34,7 @@ const logger = require('../helper/logger')
 
 
 const defaultDataFileExts = ['.yml', '.yaml', '.json', '.js']
-const FLAG_SHARED_RE = /^\s*shared?:\s*/i
+const FLAG_SHARED_RE = /^\s*(shared?|common):\s*/i
 const FLAG_LOCALE_RE = /^\s*locale?:\s*/i
 
 Token.prototype.getTemplateUrl = function() {
