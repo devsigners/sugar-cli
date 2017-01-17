@@ -10,9 +10,9 @@ const {
     getDirectoryFromUrl
 } = require('../helper/utils')
 const Sugar = require('./core')
-const defaultConfig = require('./config')
-const renderCore = new Sugar()
+const defaultConfig = require('../helper/config').template
 const logger = require('../helper/logger')
+const renderCore = new Sugar()
 
 const createRenderer = (renderer, config) => {
     return function(ctx, locals) {
