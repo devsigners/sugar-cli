@@ -31,7 +31,7 @@ const createRenderer = (renderer, config) => {
 
         logger.log(`\n\turl: %s,\n\tproject: %s,\n\tconfig file: %s`, 'middleware', url, projectDir, configFileUrl)
         return renderer.fetchData(configFileUrl).then(localConfig => {
-            logger.log(`config: %j`, 'middleware', localConfig)
+            logger.log(`local config: %j`, 'middleware', localConfig)
             return renderer.render(fileUrl, {
                 directory: projectDir,
                 data: locals,
@@ -54,8 +54,9 @@ const validate = (ctx, templateExt) => {
 
 exports = module.exports = function middleware(options, setting) {
     logger.info(`setup sugar middleware, options is %j, setting is %j`, 'middleware', options, setting)
+    // apply special setting to renderCore
     if (setting) {
-        merge(renderCore.setting, setting) // apply setting to renderCore
+        merge(renderCore.setting, setting)
     }
     options = merge({}, defaultConfig, options)
 
@@ -66,9 +67,11 @@ exports = module.exports = function middleware(options, setting) {
         return render(ctx).then((html) => {
             ctx.body = html
             logger.info(`sugar render process finished`, 'middleware')
+            console.log()
             return next()
         }).catch(err => {
             logger.error(`error occured while rendering, detail is %j`, 'middleware', err)
+            console.log()
         })
     }
 }
