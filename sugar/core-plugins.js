@@ -19,7 +19,8 @@ const ctrlKeyMap = {
     embed: true,
     forceAbsolute: true,
     base: true,
-    autoAdjustPos: true // css move to head, js move to body
+    // wether merge css (move to head) and js (move to body)
+    mergeAssets: true
 }
 
 const genAttrsStr = (hash) => {
@@ -70,12 +71,12 @@ function attachPromise(res, promise, processHtml) {
 function cssPlugin(instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('css', cssHelper)
-    
+
     return function unregister () {
         instance.unregisterHelper('css')
         instance.removeListener('post-render', onPostRender)
     }
-    
+
     function onPostRender (res) {
         const list = res.resourceMap.css
         const tasks = []
@@ -86,7 +87,7 @@ function cssPlugin(instance) {
             } else {
                 v.relativePath = relative(res.config.root, v.path)
             }
-            if (v.autoAdjustPos) {
+            if (v.mergeAssets) {
                 return true
             }
             // not pure css, and need to compile
@@ -177,7 +178,7 @@ function cssPlugin(instance) {
             return new SafeString(`<link rel="stylesheet" href="${url}" ${attrs}>`)
         }
         const resolved = resolveUrl(url, options)
-        resolved.autoAdjustPos = options.hash.autoAdjustPos || instance.setting.autoAdjustPos
+        resolved.mergeAssets = options.hash.mergeAssets || instance.setting.mergeAssets
         resolved.isPureCss = extname(url) === '.css'
         resolved.cssPath = resolved.expectedPath.replace(/\.\w+$/, '.css')
         resolved.includePaths = [
@@ -186,7 +187,7 @@ function cssPlugin(instance) {
             options.$$configRoot
         ]
         map.push(resolved)
-        return resolved.autoAdjustPos
+        return resolved.mergeAssets
             ? null
             : new SafeString(`<link rel="stylesheet" href="${resolved.cssPath}" ${attrs}>`)
     }
@@ -195,12 +196,12 @@ function cssPlugin(instance) {
 function jsPlugin(instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('js', jsHelper)
-    
+
     return function unregister () {
         instance.unregisterHelper('js')
         instance.removeListener('post-render', onPostRender)
     }
-    
+
     function onPostRender (res) {
         const list = res.resourceMap.js
         const tasks = list.filter(v => {
@@ -210,7 +211,7 @@ function jsPlugin(instance) {
             } else {
                 v.relativePath = relative(res.config.root, v.path)
             }
-            if (v.autoAdjustPos) {
+            if (v.mergeAssets) {
                 return true
             }
         }).map(v => read(v.path))
@@ -241,9 +242,9 @@ function jsPlugin(instance) {
             return new SafeString(`<script src="${url}" ${attrs}></script>`)
         }
         const resolved = resolveUrl(url, options)
-        resolved.autoAdjustPos = options.hash.autoAdjustPos || instance.setting.autoAdjustPos
+        resolved.mergeAssets = options.hash.mergeAssets || instance.setting.mergeAssets
         map.push(resolved)
-        return resolved.autoAdjustPos
+        return resolved.mergeAssets
             ? null
             : new SafeString(`<script src="${resolved.expectedPath}" ${attrs}></script>`)
     }
