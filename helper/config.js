@@ -23,8 +23,9 @@ const buildConfig = {
     // Array of patterns, used to include/exclude html pages,
     // such as `[**/*.html, !myTmpProj/**.html]`
     htmls: [],
-    copyAssets: true,
-    dest: resolve('dest')
+    dest: resolve('dest'),
+    ignoreBuiltinPatterns: false,
+    assets: true
 }
 
 // server config
