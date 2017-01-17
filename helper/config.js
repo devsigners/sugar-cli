@@ -3,7 +3,8 @@ const { resolve } = require('path')
 // template config
 const templateConfig = {
     root: process.cwd(),
-    groupPattern: '{group,set}/*',
+    // pattern to list groups
+    groups: '{group,set}/*',
     templateExt: '.html',
     dataExts: ['.yml', '.yaml', '.json', '.js'],
     configFilename: 'project',

@@ -129,7 +129,7 @@ class Sugar extends EventEmitter {
         if (!directory) {
             directory = getDirectoryFromUrl(
                 url.slice(config.root.length),
-                config.groupPattern
+                config.groups
             )
         }
         if ('disableCache' in config) {

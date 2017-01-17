@@ -25,7 +25,7 @@ const createRenderer = (renderer, config) => {
             url = join(url, config.defaultPage + config.templateExt)
         }
         const fileUrl = join(config.root, url)
-        const projectDir = getDirectoryFromUrl(url, config.groupPattern)
+        const projectDir = getDirectoryFromUrl(url, config.groups)
         const configFileUrl = join(config.root, projectDir, config.configFilename)
 
         logger.log(`\n\turl: %s,\n\tproject: %s,\n\tconfig file: %s`, 'middleware', url, projectDir, configFileUrl)
