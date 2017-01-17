@@ -19,6 +19,7 @@ const createRenderer = (renderer, config) => {
         if (!locals) locals = {}
         merge(locals, ctx.state, renderer.locals)
 
+        logger.info(`sugar render process start`, 'middleware')
         // fetch config
         let url = ctx.path
         if (!extname(url)) {
@@ -52,7 +53,7 @@ const validate = (ctx, templateExt) => {
 }
 
 exports = module.exports = function middleware(options, setting) {
-    logger.log(`setup sugar middleware, options is %j, setting is %j`, 'middleware', options, setting)
+    logger.info(`setup sugar middleware, options is %j, setting is %j`, 'middleware', options, setting)
     if (setting) {
         merge(renderCore.setting, setting) // apply setting to renderCore
     }
@@ -64,10 +65,10 @@ exports = module.exports = function middleware(options, setting) {
 
         return render(ctx).then((html) => {
             ctx.body = html
-            logger.log(`sugar render process finished.`, 'middleware')
+            logger.info(`sugar render process finished`, 'middleware')
             return next()
-        }).catch(error => {
-            console.error(error)
+        }).catch(err => {
+            logger.error(`error occured while rendering, detail is %j`, 'middleware', err)
         })
     }
 }
