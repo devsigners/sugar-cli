@@ -20,6 +20,7 @@ program
     .option('--htmls <patterns>', 'pattern to list html files, such as "**/*.html,!_.html"', patterns => {
         return patterns && patterns.split(',')
     })
+    .option('--strict', 'only process htmls in directory with config file')
     .option('--verbose', 'output processing details')
     .on('--help', () => {
         console.log(colors.green('  Examples:'))
@@ -30,19 +31,14 @@ program
 
 const configFileUrl = program.args[0]
 
-build(configFileUrl, program.dest || '', {
+build(configFileUrl, program.dest, program.verbose, {
     htmls: program.htmls,
     srcFile: program.srcFile,
     srcDir: program.src,
-    verbose: program.verbose
+    strict: program.strict
 })
 
-function build (configFileUrl, dest, {
-    srcFile,
-    srcDir,
-    htmls,
-    verbose
-}) {
+function build (configFileUrl, dest, verbose, options) {
     // NOTE: Check if we should output render process info?
     if (verbose) {
         process.env.LOGLEVEL = 0
@@ -55,15 +51,11 @@ function build (configFileUrl, dest, {
     const { destDir, config } = prepare(dest, configFileUrl)
     const buildConfig = config.build || {}
     // Cli has higher priority
-    if (htmls) {
-        buildConfig.htmls = htmls
-    }
-    if (srcFile) {
-        buildConfig.srcFile = srcFile
-    }
-    if (srcDir) {
-        buildConfig.srcDir = srcDir
-    }
+    Object.keys(options).forEach(p => {
+        if (options[p] != null) {
+            buildConfig[p] = options[p]
+        }
+    })
 
     return getHTMLFiles(config.template, buildConfig).then(fileList => {
         let len = fileList && fileList.length
@@ -72,8 +64,8 @@ function build (configFileUrl, dest, {
             const core = new Sugar()
             merge(core.setting, {
                 disableCache: true,
-                autoAdjustPos: true
-            })
+                mergeAssets: true
+            }, config.extra)
             const render = createRenderer(core, config.template)
             while (len--) {
                 const file = fileList[len]
@@ -149,7 +141,7 @@ function prepare (destDir, configFileUrl) {
     }
 }
 
-function getHTMLFiles (templateConfig = {}, { srcFile, srcDir, htmls = [], ignoreBuiltinPatterns } = {}) {
+function getHTMLFiles (templateConfig = {}, { srcFile, srcDir, strict, htmls = [], ignoreBuiltinPatterns } = {}) {
     const templateExt = templateConfig.templateExt
     let dir
     if (srcFile) {
@@ -188,14 +180,14 @@ function getHTMLFiles (templateConfig = {}, { srcFile, srcDir, htmls = [], ignor
 
         const excludeFiles = []
         const fileList = files.map(file => {
-            const projectDir = getDirectoryFromUrl(join('/', file), templateConfig.groupPattern)
+            const projectDir = getDirectoryFromUrl(join('/', file), templateConfig.groups)
             const localConfig = tryAndLoadData(
                 join(templateConfig.root, projectDir, templateConfig.configFilename),
                 templateConfig.dataExts,
                 true
             )
             if (!localConfig) {
-                if (options.strict) {
+                if (strict) {
                     excludeFiles.push(file)
                     return
                 }
