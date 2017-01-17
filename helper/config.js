@@ -38,5 +38,9 @@ const serverConfig = {
 module.exports = {
     template: templateConfig,
     build: buildConfig,
-    server: serverConfig
+    server: serverConfig,
+    extra: {
+        disableCache: true,
+        mergeAssets: true
+    }
 }
