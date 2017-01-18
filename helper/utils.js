@@ -81,6 +81,21 @@ const merge = (target, source, ...rest) => {
     return target
 }
 
+// Ignore null/undefined values
+const smartMerge = (target, source, ...rest) => {
+    if (rest.length) return smartMerge(smartMerge(target, source), ...rest)
+    for (const prop in source) {
+        if (isObject(source[prop]) && isObject(target[prop])) {
+            smartMerge(target[prop], source[prop])
+        } else {
+            if (source[prop] != null) {
+                target[prop] = source[prop]
+            }
+        }
+    }
+    return target
+}
+
 const isHttpUrl = (url) => {
     return url && /^http(s):\/\//.test(url)
 }
@@ -117,6 +132,7 @@ module.exports = {
     loadData,
     tryAndLoadData,
     merge,
+    smartMerge,
     isHttpUrl,
     getDirectoryFromUrl,
     genUniqueKey
