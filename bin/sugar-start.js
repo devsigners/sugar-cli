@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { resolve } = require('path')
+const { resolve, extname } = require('path')
 const colors = require('colors/safe')
 const program = require('./command')
 const { smartMerge } = require('../helper/utils')
@@ -60,22 +60,25 @@ function getConfig (configFileUrl, cliConfig) {
         configFileUrl = 'sugar.config.js'
         logger.warn(`configFileUrl unspecified, will use "sugar.config.js"`)
     }
-
     const config = {}
-    let specifiedConfig
-    try {
-        configFileUrl = resolve(configFileUrl)
-        if (!existsSync(configFileUrl)) {
-            logger.warn(`no such file "${configFileUrl}"`, true)
-        } else {
-            specifiedConfig = require(configFileUrl)
-        }
-        const defaultConfig = require('../helper/config.js')
-        smartMerge(config, defaultConfig, specifiedConfig, cliConfig)
-        logger.log(`config is %j`, true, config)
-    } catch (e) {
-        logger.exit(`Error occured when get config info`, e.stack.toString(), 1)
+    let specifiedConfig, root
+    configFileUrl = resolve(configFileUrl)
+    // If no extname, it means configFileUrl is root directory
+    if (!extname(configFileUrl)) {
+        root = configFileUrl
     }
-
+    const defaultConfig = require('../helper/config.js')
+    if (!root && existsSync(configFileUrl)) {
+        try {
+            specifiedConfig = require(configFileUrl)
+        } catch (e) {
+            logger.exit(`Error occured when parsing config file`, e.stack.toString(), 1)
+        }
+    }
+    smartMerge(config, defaultConfig, specifiedConfig, cliConfig)
+    if (root) {
+        config.template.root = root
+    }
+    logger.log(`config is %j`, true, config)
     return config
 }
