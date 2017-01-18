@@ -5,8 +5,8 @@ const {
     SafeString
 } = require('sugar-template/lib/utils')
 
-function injectCoreHelpers(instance) {
-    instance.registerHelper('if', function(conditional, options) {
+function injectCoreHelpers (instance) {
+    instance.registerHelper('if', function (conditional, options) {
         if (isFunction(conditional)) {
             conditional = conditional.call(this)
         }
@@ -20,7 +20,7 @@ function injectCoreHelpers(instance) {
         return new SafeString(ret)
     })
 
-    instance.registerHelper('unless', function(conditional, options) {
+    instance.registerHelper('unless', function (conditional, options) {
         return instance.helpers['if'].call(this, conditional, {
             fn: options.inverse,
             inverse: options.fn,
@@ -28,7 +28,7 @@ function injectCoreHelpers(instance) {
         })
     })
 
-    instance.registerHelper('each', function(context, options) {
+    instance.registerHelper('each', function (context, options) {
         if (!options) {
             throw new Error('Must pass iterator to #each')
         }
@@ -39,7 +39,7 @@ function injectCoreHelpers(instance) {
         let i = hash.start || 0
         let ret = ''
 
-        function execIteration(field, index, last) {
+        function execIteration (field, index, last) {
             ret += fn(context[field], {
                 key: field,
                 index: index,
@@ -83,8 +83,7 @@ function injectCoreHelpers(instance) {
         return new SafeString(ret)
     })
 
-    instance.registerHelper('log', function(data, options) {
-        const writeToDom = options.hash.writeToDom
+    instance.registerHelper('log', function (data, options) {
         if (options.hash.writeToDom) {
             return JSON.stringify(data)
         }

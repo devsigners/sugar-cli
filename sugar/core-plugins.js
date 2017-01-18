@@ -9,10 +9,7 @@ const {
 } = require('path')
 const ucprocessor = require('universal-css-processor')
 const { write, read } = require('../helper/fs')
-const {
-    isHttpUrl//,
-    // genUniqueKey
-} = require('../helper/utils')
+const { isHttpUrl } = require('../helper/utils')
 const { SafeString } = require('sugar-template/lib/utils')
 
 const ctrlKeyMap = {
@@ -23,7 +20,7 @@ const ctrlKeyMap = {
     mergeAssets: true
 }
 
-const genAttrsStr = (hash) => {
+const genAttrsStr = hash => {
     let attrs = ''
     for (const attr in hash) {
         if (!ctrlKeyMap[attr]) attrs += ` ${attr}="${hash[attr]}"`
@@ -57,7 +54,7 @@ const resolveUrl = (url, options) => {
     return res
 }
 
-function attachPromise(res, promise, processHtml) {
+function attachPromise (res, promise, processHtml) {
     if (res.promise) {
         res.promise = res.promise.then(html => {
             return promise.then(() => processHtml(html))
@@ -68,7 +65,7 @@ function attachPromise(res, promise, processHtml) {
     return res
 }
 
-function cssPlugin(instance) {
+function cssPlugin (instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('css', cssHelper)
 
@@ -144,12 +141,14 @@ function cssPlugin(instance) {
                     },
                     {
                         name: 'autoprefixer'
-                    }/**,
+                    }
+                    // TODO: support option to control autoprefixer and minify
+                    /** ,
                     {
                         name: 'minify'
-                    }*/
+                    } */
                 ], options).then(joinedFile => {
-                    const destPath = relative(joinedFile.cwd, join(res.url, '..'))
+                    // const destPath = relative(joinedFile.cwd, join(res.url, '..'))
                     return ucprocessor.writeMap(joinedFile, '.', {
                         destPath: '.',
                         includeContent: false
@@ -159,7 +158,7 @@ function cssPlugin(instance) {
                     })
                 })
             })
-        }), (html) => {
+        }), html => {
             if (files.length) {
                 return html.replace(/<\/head>/, `<link rel="stylesheet" href="${
                     basename(targetUrl)
@@ -169,7 +168,7 @@ function cssPlugin(instance) {
         })
     }
 
-    function cssHelper(url, options) {
+    function cssHelper (url, options) {
         const attrs = genAttrsStr(options.hash)
         const map = options.resourceMap.css
         // retrive url from token
@@ -193,7 +192,7 @@ function cssPlugin(instance) {
     }
 }
 
-function jsPlugin(instance) {
+function jsPlugin (instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('js', jsHelper)
 
@@ -224,7 +223,7 @@ function jsPlugin(instance) {
             }
             targetUrl = join(res.url, `../__c_${name}.js`)
             return write(targetUrl, files.join('\n'))
-        }), (html) => {
+        }), html => {
             if (tasks.length) {
                 return html.replace(/<\/body>/, `<script src="${
                     basename(targetUrl)
@@ -234,7 +233,7 @@ function jsPlugin(instance) {
         })
     }
 
-    function jsHelper(url, options) {
+    function jsHelper (url, options) {
         const attrs = genAttrsStr(options.hash)
         const map = options.resourceMap.js
         if (isHttpUrl(url)) {
@@ -250,7 +249,7 @@ function jsPlugin(instance) {
     }
 }
 
-module.exports = function injectCorePlugins(instance) {
+module.exports = function injectCorePlugins (instance) {
     instance.registerPlugin('css', cssPlugin)
     instance.registerPlugin('js', jsPlugin)
 }

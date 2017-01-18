@@ -1,21 +1,12 @@
-const {
-    extname,
-    join,
-    dirname,
-    basename
-} = require('path')
-const {
-    tryAndLoadData,
-    merge,
-    getDirectoryFromUrl
-} = require('../helper/utils')
+const { extname, join } = require('path')
+const { merge, getDirectoryFromUrl } = require('../helper/utils')
 const Sugar = require('./core')
 const defaultConfig = require('../helper/config').template
 const logger = require('../helper/logger')
 const renderCore = new Sugar()
 
 const createRenderer = (renderer, config) => {
-    return function(ctx, locals) {
+    return function (ctx, locals) {
         if (!locals) locals = {}
         merge(locals, ctx.state, renderer.locals)
 
@@ -41,9 +32,7 @@ const createRenderer = (renderer, config) => {
     }
 }
 
-const isRequestHtml = (ctx) => {
-    return ctx.accepts('html')
-}
+const isRequestHtml = ctx => ctx.accepts('html')
 const validate = (ctx, templateExt) => {
     if (ctx.method !== 'HEAD' && ctx.method !== 'GET') return false
     if (ctx.body != null || ctx.status !== 404 || !isRequestHtml(ctx)) return false
@@ -52,7 +41,7 @@ const validate = (ctx, templateExt) => {
     return true
 }
 
-exports = module.exports = function middleware(options, setting) {
+exports = module.exports = function middleware (options, setting) {
     logger.info(`setup sugar middleware, options is %j, setting is %j`, 'middleware', options, setting)
     // apply special setting to renderCore
     if (setting) {
@@ -61,10 +50,10 @@ exports = module.exports = function middleware(options, setting) {
     options = merge({}, defaultConfig, options)
 
     const render = createRenderer(renderCore, options)
-    return function renderView(ctx, next) {
+    return function renderView (ctx, next) {
         if (!validate(ctx, options.templateExt)) return next()
 
-        return render(ctx).then((html) => {
+        return render(ctx).then(html => {
             ctx.body = html
             logger.info(`sugar render process finished`, 'middleware')
             console.log()

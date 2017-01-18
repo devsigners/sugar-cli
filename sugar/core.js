@@ -25,7 +25,7 @@ const FLAG_SHARED_RE = /^\s*(shared?|common):\s*/i
 const FLAG_LOCALE_RE = /^\s*locale?:\s*/i
 
 class Sugar extends EventEmitter {
-    constructor() {
+    constructor () {
         super()
         this.setting = {}                 // global render setting
         this.plugins = {}                 // plugins
@@ -43,7 +43,7 @@ class Sugar extends EventEmitter {
             '__plain_layout__.ext': '{{{body}}}'
         }
     }
-    parse(template, templateUrl) {
+    parse (template, templateUrl) {
         logger.log(`%s`, `parse`, template && template.slice(0, 20) + '...')
         const cache = this.cache
         let ast = cache.get(template)
@@ -70,7 +70,7 @@ class Sugar extends EventEmitter {
         this.emit('compile', ast)
         return ast
     }
-    fetchTemplate(url) {
+    fetchTemplate (url) {
         logger.log(`%s`, `fetchTemplate`, url)
         let disableCache = this.setting.disableCache
         let tpl
@@ -89,7 +89,7 @@ class Sugar extends EventEmitter {
         }
         return Promise.resolve(tpl)
     }
-    fetchData(url, exts = defaultDataFileExts) {
+    fetchData (url, exts = defaultDataFileExts) {
         logger.log(`%s`, `fetchData`, url)
         let data
         if (typeof exts === 'string') {
@@ -119,7 +119,7 @@ class Sugar extends EventEmitter {
             return data
         })
     }
-    render(url, { data, config, directory }) {
+    render (url, { data, config, directory }) {
         // As we know, this.partials is lru cache. So it's possible to lose
         // a partial even you get it just now inside one page render process.
         // So every page has its own partial cache.
@@ -182,15 +182,11 @@ class Sugar extends EventEmitter {
                 }).then(tpl => {
                     return [this.parse(tpl, layout), tpl, ast, template]
                 })
-            })
-            .then(([layoutAst, layoutTpl, pageAst, pageTpl]) => {
-
+            }).then(([layoutAst, layoutTpl, pageAst, pageTpl]) => {
                 const promises = [
                     collectAndResolveDependencies(pageAst),
                     collectAndResolveDependencies(layoutAst)
                 ]
-                // const pagePromise = collectAndResolveDependencies(pageAst)
-                // const layoutPromise = collectAndResolveDependencies(layoutAst)
 
                 // A chance to alter promises
                 this.emit('pre-dependencies', promises)
@@ -230,7 +226,7 @@ class Sugar extends EventEmitter {
             })
 
         // raw should always be string
-        function fixUrl(raw, type) {
+        function fixUrl (raw, type) {
             let root, rawUrl
             // helpers/partials/data/layout
             let typeDir
@@ -262,11 +258,11 @@ class Sugar extends EventEmitter {
             return join(root || join(url, '..'), typeDir, rawUrl)
         }
 
-        function collectAndResolveDependencies(ast) {
+        function collectAndResolveDependencies (ast) {
             logger.log(``, `collectAndResolveDependencies`)
             const innerTasks = []
             traverser(ast, {
-                Partial(token) {
+                Partial (token) {
                     let promise = resolvePartial(token)
                     if (promise) {
                         innerTasks.push(promise.then(partialUrl => {
@@ -277,7 +273,7 @@ class Sugar extends EventEmitter {
             })
             return Promise.all(innerTasks)
 
-            function resolvePartial(token) {
+            function resolvePartial (token) {
                 let partialUrl = fixUrl(token, 'partial')
                 if (!extname(partialUrl)) {
                     partialUrl += config.templateExt
@@ -305,36 +301,36 @@ class Sugar extends EventEmitter {
         }
     }
     // add helper function
-    registerHelper(name, fn) {
+    registerHelper (name, fn) {
         if (!name) return
         if (!isFunction(fn)) {
             throw new Error('Helper should be a function')
         }
         this.helpers[name] = fn
     }
-    unregisterHelper(name) {
+    unregisterHelper (name) {
         delete this.helpers[name]
     }
     // add filter function
-    registerFilter(name, fn) {
+    registerFilter (name, fn) {
         if (!name) return
         if (!isFunction(fn)) {
             throw new Error('Filter should be a function')
         }
         this.filters[name] = fn
     }
-    unregisterFilter(name) {
+    unregisterFilter (name) {
         delete this.filters[name]
     }
     // add partials
-    registerPartial(name, template) {
+    registerPartial (name, template) {
         if (!name || typeof template !== 'string') return
         this.partials.set(name, template)
     }
-    unregisterPartial(name) {
+    unregisterPartial (name) {
         delete this.partials[name]
     }
-    registerPlugin(name, plugin) {
+    registerPlugin (name, plugin) {
         // The return value of plugin() should be function,
         // and invoke it will unregister this plugin
         if (!isFunction(plugin)) {
@@ -342,7 +338,7 @@ class Sugar extends EventEmitter {
         }
         this.plugins[name] = plugin(this)
     }
-    unregisterPlugin(name) {
+    unregisterPlugin (name) {
         if (name && this.plugins[name]) {
             this.plugins[name](this)
         }

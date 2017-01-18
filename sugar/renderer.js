@@ -1,11 +1,8 @@
-const {
-    isArray,
-    escapeHtml
-} = require('sugar-template/lib/utils')
+const { isArray, escapeHtml } = require('sugar-template/lib/utils')
 const Context = require('sugar-template/lib/context')
 const Exception = require('sugar-template/lib/exception')
 
-function transformHash(hash, context) {
+function transformHash (hash, context) {
     const res = {}
     for (let p in hash) {
         if (hash[p].type === 'name') {
@@ -18,25 +15,25 @@ function transformHash(hash, context) {
 }
 
 const renderer = {
-    Text(options, token) {
+    Text (options, token) {
         return token.value
     },
-    RawValue(options, token, context) {
+    RawValue (options, token, context) {
         const value = context.lookup(token.value)
         return value == null ? '' : value
     },
-    Value(options, token, context) {
+    Value (options, token, context) {
         const value = context.lookup(token.value)
         return value == null ? '' : escapeHtml(value)
     },
-    IgnoreCompile(options, token) {
+    IgnoreCompile (options, token) {
         return token.value
     },
-    Filter(options, token, context, template) {
+    Filter (options, token, context, template) {
         const data = token.name && context.lookup(token.name)
         let value = data
         let filter
-        token.filters.forEach((v) => {
+        token.filters.forEach(v => {
             filter = options.filters[v.name]
             if (!filter) {
                 throw new Exception(`Miss filter#${v.name}`, token.loc.start, template || '')
@@ -45,7 +42,7 @@ const renderer = {
         })
         return value == null ? '' : escapeHtml(value)
     },
-    InlineHelper(options, token, context, template) {
+    InlineHelper (options, token, context, template) {
         const helper = options.helpers[token.name]
         if (!helper) {
             throw new Exception(`Miss helper#${token.name}`, token.loc.start, template || '')
@@ -61,8 +58,8 @@ const renderer = {
             context,
             data,
             {
-                fn() { return '' },
-                inverse() { return '' },
+                fn () { return '' },
+                inverse () { return '' },
                 hash: transformHash(token.params.hash, context),
                 resourceMap: options.resourceMap,
                 $$base: token.getTemplateUrl(),
@@ -73,7 +70,7 @@ const renderer = {
         )
         return value == null ? '' : escapeHtml(value)
     },
-    Helper(options, token, context, template) {
+    Helper (options, token, context, template) {
         const helper = options.helpers[token.name]
         if (!helper) {
             throw new Exception(`Miss helper#${token.name}`, token.loc.start, template || '')
@@ -89,7 +86,7 @@ const renderer = {
                 fn: createRenderer(token.block, context, template, options),
                 inverse: token.inverse
                     ? createRenderer(token.inverse, context, template, options)
-                    : function() { return '' },
+                    : function () { return '' },
                 hash: transformHash(token.params.hash, context),
                 $$base: token.getTemplateUrl(),
                 $$root: token.getRootTemplateUrl(),
@@ -99,7 +96,7 @@ const renderer = {
         )
         return value == null ? '' : escapeHtml(value)
     },
-    Partial(options, token, context, template) {
+    Partial (options, token, context, template) {
         const partial = token.name.type === 'name'
             ? context.lookup(token.name.value)
             : token.name.value
@@ -121,7 +118,7 @@ const renderer = {
     }
 }
 
-function renderAst(ast, context, template, options) {
+function renderAst (ast, context, template, options) {
     let buffer = ''
     const tokens = isArray(ast) ? ast : ast.body
     for (let i = 0, len = tokens.length; i < len; i++) {
@@ -134,7 +131,7 @@ function renderAst(ast, context, template, options) {
     return buffer
 }
 
-function createRenderer(tokens, context, template, options) {
+function createRenderer (tokens, context, template, options) {
     return (subContext, pluginData) => {
         if (!(subContext instanceof Context)) {
             subContext = subContext === context.data

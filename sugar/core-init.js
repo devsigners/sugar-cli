@@ -1,7 +1,7 @@
 const Token = require('sugar-template/lib/token')
 
 function extendToken () {
-    Token.prototype.getTemplateUrl = function() {
+    Token.prototype.getTemplateUrl = function () {
         if (this.type === 'Program') {
             return this.templateUrl
         } else if (this.parent) {
@@ -10,7 +10,7 @@ function extendToken () {
         return ''
     }
 
-    Token.prototype.getRootTemplateUrl = function() {
+    Token.prototype.getRootTemplateUrl = function () {
         let parent = this
         while (parent.parent) {
             parent = parent.parent
@@ -18,7 +18,7 @@ function extendToken () {
         return this.templateUrl
     }
 
-    Token.prototype.shallowClone = function() {
+    Token.prototype.shallowClone = function () {
         return Object.assign({}, this)
     }
 }
