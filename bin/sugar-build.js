@@ -86,8 +86,15 @@ function build (configFileUrl, dest, verbose, options) {
             }).then(() => {
                 console.log()
                 console.log(colors.bold(colors.green('  Success!')))
-                console.log(colors.green(`  see ${destDir} for all build files`));
+                console.log(colors.gray(`  see ${destDir} for all build files`));
             })
+        } else {
+            console.log()
+            console.log(colors.bold(colors.green('  Done (no files processed)!')))
+            if (!verbose) {
+                console.log(colors.gray(`  use --verbose to see details`))
+            }
+            exit(null, null, 0)
         }
     }).catch(e => {
         logger.error(`Error occurred while building, detail is:`)
