@@ -1,0 +1,1 @@
+`components` directory is used to place partials (html code block or components).
