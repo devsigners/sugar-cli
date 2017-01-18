@@ -1,45 +1,40 @@
 #!/usr/bin/env node
 
-const {
-    join,
-    extname
-} = require('path')
-const colors = require('colors') // eslint-disable-line
+const { resolve, extname } = require('path')
+const colors = require('colors/safe')
 const program = require('./command')
-const log = require('./logger')('sugar-static')
+const logger = require('./logger')
+const serve = require('../server/static/serve')
 
 program
-    .option('--host [host]', 'Static server host, default to "0.0.0.0"')
-    .option('--port [port]', 'Static server port, default to 3003')
+    .option('-a, --host <host>', 'server host, default to "0.0.0.0"')
+    .option('-p, --port <port>', 'server port, default to 2333')
     .on('--help', () => {
-        console.log('  Examples:'.green)
+        console.log(colors.green('  Examples:'))
         console.log()
-        console.log('    $ sugar static'.grey)
+        console.log(colors.gray('    $ sugar static'))
     })
     .parse(process.argv)
 
-const dir = program.args[0]
+const root = program.args[0]
 
-serveStatic(dir, program.host, program.port)
+serveStatic(root, program.host, program.port)
 
-function serveStatic(dir, host = '0.0.0.0', port = 3003) {
-    if (!dir || extname(dir)) {
-        dir = '.'
+function serveStatic(root, host = '0.0.0.0', port = 2333) {
+    if (!root || extname(root)) {
+        root = '.'
     }
-    dir = join(process.cwd(), dir)
+    root = resolve(root)
     port = +port
     if (Number.isNaN(port) || port < 1024 || port > 65535) {
-        log(`Invalid port ${port}`, 'red')
-        log(`Port range: [1024, 65535], default is 3003`)
-        process.exit(0)
+        logger.exit(`invalid port ${port}`, `port range is [1024, 65535], default is 2333`, 1)
     }
-    require('../server/static/pureStatic')(host, port, dir, (err) => {
+    serve(host, port, root, err => {
         if (err) {
-            log('Failed to run static server', 'red')
-            log(err.stack, 'red')
+            logger.exit(`Error occured when run static server`, err && err.stack, 1)
         } else {
-            log(`Server is running at http://${host}:${port}`, 'gray')
-            log('Serve static at ' + dir, 'gray')
+            console.log()
+            logger.info(`Server is running at http://${host}:${port}, root is ${root}`)
         }
     })
 }
