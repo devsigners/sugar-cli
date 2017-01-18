@@ -17,9 +17,10 @@ function runSugarServer(config = {}) {
 
     app.listen(config.server.port, config.server.host, (err) => {
         if (err) {
-            logger.error('failed to run server, error defail is %j', 'server', err)
+            logger.zLog(`failed to run server`, true, 'error', true)
+            logger.zLog(`error defail is ${err}`, true, 'error')
         } else {
-            logger.info(`server is running at http://${config.server.host}:${config.server.port}`, 'server')
+            logger.zLog(`server is running at http://${config.server.host}:${config.server.port}`,  true, 'info', true)
         }
     })
     return app
