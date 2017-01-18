@@ -2,7 +2,7 @@ const colors = require('colors/safe')
 const util = require('util')
 
 class Logger {
-    constructor({ theme, level, title, showTime, boldPrefix, alwaysCheckLevel = true } = {}) {
+    constructor ({ theme, level, title, showTime, boldPrefix, alwaysCheckLevel = true } = {}) {
         // theme
         this.theme = Object.assign({
             log: 'cyan',

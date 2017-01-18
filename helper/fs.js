@@ -12,13 +12,13 @@ const read = (filename, options) => {
     })
 }
 
-const exist = (filename) => {
+const exist = filename => {
     return new Promise((resolve, reject) => {
         fs.access(filename, err => err ? reject(err) : resolve(filename))
     })
 }
 
-const statSync = (url) => {
+const statSync = url => {
     try {
         return fs.statSync(url)
     } catch (error) {
@@ -26,20 +26,20 @@ const statSync = (url) => {
     }
 }
 
-const rm = (pattern) => {
+const rm = pattern => {
     return new Promise((resolve, reject) => {
-        rimraf(pattern, (err) => err ? reject(err) : resolve())
+        rimraf(pattern, err => err ? reject(err) : resolve())
     })
 }
 
-const mkdir = (dir) => {
+const mkdir = dir => {
     return new Promise((resolve, reject) => {
-        mkdirp(dir, (err) => err ? reject(err) : resolve())
+        mkdirp(dir, err => err ? reject(err) : resolve())
     })
 }
 
 const list = (root, pattern) => {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
         glob(pattern, root ? {
             cwd: root
         } : {}, (err, data) => err ? reject(err) : resolve(data))
@@ -55,12 +55,12 @@ const write = (filename, content, createDirIfNotExists, options) => {
         promise.then(() => {
             fs.writeFile(filename, content, options || {
                 encoding: 'utf8'
-            }, (err) => err ? reject(err) : resolve())
+            }, err => err ? reject(err) : resolve())
         })
     })
 }
 
-const readlinkSync = (url) => {
+const readlinkSync = url => {
     const parts = url.split(path.sep)
     let realUrl = ''
     let part

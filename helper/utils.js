@@ -1,5 +1,5 @@
 const { read, readSync, existsSync } = require('./fs')
-const { sep, basename } = require('path')
+const { sep, basename, extname } = require('path')
 const yaml = require('yamljs')
 const minimatch = require('minimatch')
 
@@ -7,11 +7,11 @@ const minimatch = require('minimatch')
  * handle yaml
  */
 
-const parseRe = /^\s*\-{3,3}([\S\s]+?)\-{3,3}/i
-const parseYaml = (content) => {
+const parseRe = /^\s*-{3,3}([\S\s]+?)-{3,3}/i
+const parseYaml = content => {
     return content && typeof content === 'string' ? yaml.parse(content) : null
 }
-const parseMixedYaml = (content) => {
+const parseMixedYaml = content => {
     const res = parseRe.exec(content)
     return res ? {
         metadata: parseYaml(res[1]),
@@ -32,12 +32,10 @@ const dataTypeMap = {
     '.json': JSON.parse
 }
 const loadData = (url, type, sync) => {
-    if (!type) type = path.extname(url)
+    if (!type) type = extname(url)
 
     if (type === '.js') {
-        return sync ? require(url) : new Promise((resolve) => {
-            resolve(require(url))
-        })
+        return sync ? require(url) : Promise.resolve(require(url))
     }
 
     const parse = dataTypeMap[type] || parseYaml
@@ -65,7 +63,7 @@ const tryAndLoadData = (url, types, sync, setBack) => {
  * common utils
  */
 // exclude function, Date, RegExp and so on
-const isObject = (obj) => {
+const isObject = obj => {
     return Object.prototype.toString.call(obj) === '[object Object]'
 }
 
@@ -96,7 +94,7 @@ const smartMerge = (target, source, ...rest) => {
     return target
 }
 
-const isHttpUrl = (url) => {
+const isHttpUrl = url => {
     return url && /^http(s):\/\//.test(url)
 }
 
@@ -104,7 +102,7 @@ const isHttpUrl = (url) => {
 // 1. /mydir/index.html --> mydir
 // 2. /mygroup/myproj/x.html --> mygroup/myproj
 const getDirectoryFromUrl = (url, globs) => {
-    parts = url.split(sep).filter(p => p)
+    const parts = url.split(sep).filter(p => p)
     const name = basename(url)
     let cur = parts[0]
     if (!globs) {

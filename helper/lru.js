@@ -18,12 +18,12 @@
  *  removed  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  <--  added
  */
 class LRUCache {
-    constructor(limit) {
+    constructor (limit) {
         this.size = 0
         this.limit = limit || 10
         this.cache = {}
     }
-    add(key, value) {
+    add (key, value) {
         const entry = {
             key,
             value
@@ -48,7 +48,7 @@ class LRUCache {
      * Purge the least recently used (oldest) entry from the cache. Returns the
      * removed entry or undefined if the cache was empty.
      */
-    shift() {
+    shift () {
         const entry = this.head
         if (entry) {
             if (entry.newer) {
@@ -69,7 +69,7 @@ class LRUCache {
      * Get and register recent use of <key>. Returns the value associated with <key>
      * or undefined if not in cache.
      */
-    get(key, returnEntry) {
+    get (key, returnEntry) {
         const entry = this.cache[key]
         if (!entry) return
 
@@ -101,7 +101,7 @@ class LRUCache {
      * Update the value of entry with <key>. Returns the old value, or undefined if
      * entry was not in the cache.
      */
-    set(key, value) {
+    set (key, value) {
         const entry = this.cache[key]
         let oldValue
         if (entry) {
@@ -117,7 +117,7 @@ class LRUCache {
      * Remove entry <key> from cache and return its value. Returns undefined if not
      * found.
      */
-    remove(key) {
+    remove (key) {
         const entry = this.cache[key]
         if (!entry) return
 
@@ -138,18 +138,18 @@ class LRUCache {
         this.size--
         return entry.value
     }
-    clear() {
+    clear () {
         this.head = this.tail = null
         this.size = 0
         this.cache = {}
     }
-    find(key) {
+    find (key) {
         return this.cache[key]
     }
-    keys() {
+    keys () {
         return Object.keys(this.cache)
     }
-    toString() {
+    toString () {
         let res = ''
         let entry = this.head
         while (entry) {
