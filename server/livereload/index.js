@@ -1,32 +1,28 @@
 const chokidar = require('chokidar')
 const livereload = require('tiny-lr')
-const log = require('debug')('livereload')
+const logger = require('../../helper/logger')
 
 class Reloader {
-    constructor({
-        port,
-        files,
-        watchOptions
-    }) {
+    constructor ({ port, files, chokidar }) {
         this.port = port || 35729
         this.files = files || ['**/*.js', '**/*.css']
-        this.watchOptions = watchOptions || {}
+        this.chokidar = chokidar || {}
     }
-    start(cb) {
+    start (cb) {
         const server = this.server = livereload()
-        log('server created')
+        logger.info('server created', 'livereload')
         server.listen(this.port, () => {
-            log('server started on port: %o', this.port)
+            logger.info('server started on port: %d', 'livereload', this.port)
 
             const list = this.files
             // default ignore node_modules and bower_components
             list.push('!**/node_modules/**', '!**/bower_components/**')
-            const watcher = this.watcher = chokidar.watch(list, this.watchOptions)
+            const watcher = this.watcher = chokidar.watch(list, this.chokidar)
 
-            log(`start watch files: \n\t${list.join('\n\t')}`)
+            logger.info(`start watch files: \n\t${list.join('\n\t')}`, 'livereload')
 
-            watcher.on('all', function(event, file) {
-                log('%o has %o', file, event)
+            watcher.on('all', (event, file) => {
+                logger.log('%s has %s', 'livereload', file, event)
                 server.changed({
                     body: {
                         files: file
@@ -38,21 +34,17 @@ class Reloader {
         })
 
         server.server.removeAllListeners('error')
-        server.server.on('error', (err) => {
+        server.server.on('error', err => {
             if (err.code === 'EADDRINUSE') {
-                log(`port ${this.port} is not available`)
-                server.close()
-
-                if (this.watcher) {
-                    this.watcher.close()
-                }
+                logger.error(`port ${this.port} is not available`, 'livereload')
+                this.close()
                 process.exit(1)
             } else {
-                log(err.message + '\n\t' + err.stack)
+                logger.error(err.message + '\n\t' + err.stack, 'livereload')
             }
         })
     }
-    close() {
+    close () {
         if (this.server) {
             this.server.close()
         }
