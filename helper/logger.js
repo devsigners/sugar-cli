@@ -120,6 +120,13 @@ class Logger {
         }
         return this._log(message, title, 'error')
     }
+    // directly log, wont affected by log level.
+    zLog (message, indent = true, level = 'log', bold) {
+        message = colors[level](message)
+        console[level](
+            (indent ? '  ' : '') + (bold ? colors.bold(message) : message)
+        )
+    }
 }
 
 const defaultLogger = new Logger({

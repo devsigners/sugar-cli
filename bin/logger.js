@@ -29,13 +29,6 @@ logger._log = function _log (message, indent = true, level = 'log') {
     )
 }
 
-logger.zLog = function zLog (message, indent = true, level = 'log', bold) {
-    message = colors[level](message)
-    console[level](
-        (indent ? '  ' : '') + (bold ? colors.bold(message) : message)
-    )
-}
-
 logger.exit = function exit (title, msg, num = 1, level = 'error') {
     if (title) {
         this.zLog(title, true, level, true)
