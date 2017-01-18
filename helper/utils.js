@@ -58,7 +58,7 @@ const tryAndLoadData = (url, types, sync, setBack) => {
     })) {
         return res
     }
-    return Promise.resolve(null)
+    return sync ? false : Promise.resolve(null)
 }
 
 /**
