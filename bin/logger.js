@@ -36,4 +36,14 @@ logger.zLog = function zLog (message, indent = true, level, bold) {
     )
 }
 
+logger.exit = function exit (title, msg, num = 1, level = 'error') {
+    if (title) {
+        this.zLog(title, true, level, true)
+    }
+    if (msg) {
+        this[level](msg)
+    }
+    process.exit(num)
+}
+
 module.exports = logger

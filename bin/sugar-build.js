@@ -94,7 +94,7 @@ function build (configFileUrl, dest, verbose, options) {
             if (!verbose) {
                 console.log(colors.gray(`  use --verbose to see details`))
             }
-            exit(null, null, 0)
+            logger.exit(null, null, 0)
         }
     }).catch(e => {
         logger.error(`Error occurred while building, detail is:`)
@@ -129,7 +129,7 @@ function prepare (destDir, configFileUrl) {
         }
         logger.log(`config is %j`, true, config)
     } catch (e) {
-        exit(`Error occured when get config info`, e.stack.toString(), 1)
+        logger.exit(`Error occured when get config info`, e.stack.toString(), 1)
     }
 
     // Prepare destDir.
@@ -137,7 +137,7 @@ function prepare (destDir, configFileUrl) {
         destDir = config.build.dest
         logger.warn(`destDir unspecified, will use config.build.dest "${destDir}"`)
         if (!config.build.dest) {
-            exit('Error: no valid dest directory found', 'config.build.dest & destDir are all unspecified', 1)
+            logger.exit('Error: no valid dest directory found', 'config.build.dest & destDir are all unspecified', 1)
         }
     }
     destDir = isAbsolute(destDir) ? destDir : join(process.cwd(), destDir)
@@ -154,13 +154,13 @@ function getHTMLFiles (templateConfig = {}, { srcFile, srcDir, strict, htmls = [
     if (srcFile) {
         srcFile = isAbsolute(srcFile) ? srcFile : join(process.cwd(), srcFile)
         if (!existsSync(srcFile)) {
-            exit(`no such file "${srcFile}" (srcFile)`, '', 1)
+            logger.exit(`no such file "${srcFile}" (srcFile)`, '', 1)
         }
         return Promise.resolve([srcFile])
     } else if (srcDir) {
         srcDir = isAbsolute(srcDir) ? srcDir : join(process.cwd(), srcDir)
         if (!existsSync(srcDir)) {
-            exit(`no such file "${srcDir}" (srcDir)`, '', 1)
+            logger.exit(`no such file "${srcDir}" (srcDir)`, '', 1)
         }
         dir = srcDir
     } else {
@@ -245,14 +245,4 @@ function copyAssets (templateConfig, destDir, assets) {
         })
         return Promise.all(promises)
     })
-}
-
-function exit (title, msg, num = 1, type = 'error') {
-    if (title) {
-        logger[type](title)
-    }
-    if (msg) {
-        logger[type](msg)
-    }
-    process.exit(num)
 }
