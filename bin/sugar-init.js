@@ -4,7 +4,7 @@ const { resolve, dirname, join, extname } = require('path')
 const spawn = require('child_process').spawn
 const colors = require('colors/safe') // eslint-disable-line
 const program = require('./command')
-const { read, write, mkdir, list } = require('../helper/fs')
+const { read, write, list } = require('../helper/fs')
 const logger = require('./logger')
 
 program
@@ -84,7 +84,7 @@ function setup (targetDir, withDemo, autorun, verbose) {
             if (verbose) {
                 args.push('--verbose')
             }
-            const child = spawn(`sugar`, args, {
+            spawn(`sugar`, args, {
                 env: process.env,
                 stdio: 'inherit',
                 cwd: targetDir
@@ -114,7 +114,7 @@ function getTargetDir (targetDir) {
     }) : Promise.resolve(targetDir)
 }
 
-function promptTargetDir() {
+function promptTargetDir () {
     process.stdout.write(
         '\n' + colors.bold('  it seems target directory has extension, do you really want this? (yes/no)')
     )

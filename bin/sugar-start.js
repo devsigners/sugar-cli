@@ -36,7 +36,7 @@ run(configFileUrl, program.verbose, {
     }
 })
 
-function run(configFileUrl, verbose, cliConfig) {
+function run (configFileUrl, verbose, cliConfig) {
     if (verbose) {
         process.env.LOGLEVEL = 0
         logger.level = 0

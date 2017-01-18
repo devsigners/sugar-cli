@@ -20,7 +20,7 @@ const root = program.args[0]
 
 serveStatic(root, program.host, program.port)
 
-function serveStatic(root, host = '0.0.0.0', port = 2333) {
+function serveStatic (root, host = '0.0.0.0', port = 2333) {
     if (!root || extname(root)) {
         root = '.'
     }

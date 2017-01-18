@@ -86,7 +86,7 @@ function build (configFileUrl, dest, verbose, options) {
             }).then(() => {
                 console.log()
                 console.log(colors.bold(colors.green('  Success!')))
-                console.log(colors.gray(`  see ${destDir} for all build files`));
+                console.log(colors.gray(`  see ${destDir} for all build files`))
             })
         } else {
             console.log()

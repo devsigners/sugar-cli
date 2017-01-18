@@ -23,11 +23,11 @@ Command.prototype.missingArgument = function (name) {
 }
 
 Command.prototype.version = function (str, flags) {
-    if (0 === arguments.length) return this._version
+    if (arguments.length === 0) return this._version
     this._version = str
     flags = flags || '-v, --version'
     this.option(flags, 'output the version number')
-    this.on('version', function() {
+    this.on('version', function () {
         process.stdout.write('  ' + colors.green(str) + '\n')
         process.exit(0)
     })
