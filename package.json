@@ -45,7 +45,7 @@
     "rimraf": "^2.5.2",
     "sugar-template": "^1.0.1",
     "tiny-lr": "^0.2.1",
-    "universal-css-processor": "^0.3.3",
+    "universal-css-processor": "^0.3.4",
     "yamljs": "^0.2.7"
   },
   "engines": {
