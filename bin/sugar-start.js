@@ -28,11 +28,9 @@ const cliConfig = {
         port: program.port,
         verbose: program.verbose
     },
-    template: {
-        extra: {
-            disableCache: program.disableCache,
-            mergeAssets: program.mergeAssets
-        }
+    extra: {
+        disableCache: program.disableCache,
+        mergeAssets: program.mergeAssets
     },
     watch: program.watch ? { files: program.watch } : false
 }
