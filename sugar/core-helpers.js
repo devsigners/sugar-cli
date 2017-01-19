@@ -4,6 +4,7 @@ const {
     isArray,
     SafeString
 } = require('sugar-template/lib/utils')
+const { resolveUrl } = require('./core-plugins')
 
 function injectCoreHelpers (instance) {
     instance.registerHelper('if', function (conditional, options) {
@@ -88,6 +89,11 @@ function injectCoreHelpers (instance) {
             return JSON.stringify(data)
         }
         console.log(data)
+    })
+
+    instance.registerHelper('url', function (url, options) {
+        const res = resolveUrl(url, options)
+        return res && res.expectedPath
     })
 }
 

@@ -249,7 +249,9 @@ function jsPlugin (instance) {
     }
 }
 
-module.exports = function injectCorePlugins (instance) {
+exports = module.exports = function injectCorePlugins (instance) {
     instance.registerPlugin('css', cssPlugin)
     instance.registerPlugin('js', jsPlugin)
 }
+
+exports.resolveUrl = resolveUrl
