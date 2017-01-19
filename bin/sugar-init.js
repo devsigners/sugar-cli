@@ -37,6 +37,7 @@ function setup (targetDir, withDemo, autorun, verbose) {
         // 1. write project config file
         tasks.push(
             read(join(__dirname, '../helper/config.js')).then(content => {
+                content = content.replace(`process.cwd()`, '__dirname')
                 return write(
                     join(targetDir, 'sugar.config.js'),
                     content,
