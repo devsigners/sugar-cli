@@ -25,7 +25,8 @@ const configFileUrl = program.args[0]
 const cliConfig = {
     server: {
         host: program.host,
-        port: program.port
+        port: program.port,
+        verbose: program.verbose
     },
     template: {
         extra: {
@@ -36,10 +37,10 @@ const cliConfig = {
     watch: program.watch ? { files: program.watch } : false
 }
 
-run(configFileUrl, program.verbose, cliConfig)
+run(configFileUrl, cliConfig)
 
-function run (configFileUrl, verbose, cliConfig) {
-    if (verbose) {
+function run (configFileUrl, cliConfig) {
+    if (cliConfig.server.verbose) {
         process.env.LOGLEVEL = 0
         logger.level = 0
     } else {

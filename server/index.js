@@ -1,5 +1,6 @@
 const Koa = require('koa')
 const livereload = require('koa-livereload')
+const koaLogger = require('koa-logger')
 const logger = require('../helper/logger')
 const Reloader = require('./livereload')
 
@@ -11,6 +12,9 @@ function runSugarServer (config = {}) {
     const serve = require('./static')
     const app = new Koa()
 
+    if (config.server.verbose) {
+        app.use(koaLogger())
+    }
     app.use(sugar(config.template, config.extra))
 
     app.use(serve(config.template.root, {
