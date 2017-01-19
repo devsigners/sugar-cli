@@ -12,7 +12,7 @@ program
     .option('--port <port>', 'server port, default is 3000', port => Number(port))
     .option('--disable-cache', 'disable server cache')
     .option('--merge-assets', 'auto merge css and js code')
-    .option('-w, --watch [files]', 'watch and livereload, ')
+    .option('-w, --watch [files]', 'watch and livereload, support file/dir/glob, like "**/*.{html,css}"')
     .option('--verbose', 'output processing details')
     .on('--help', () => {
         console.log(colors.green('  Examples:'))
@@ -22,8 +22,7 @@ program
     .parse(process.argv)
 
 const configFileUrl = program.args[0]
-
-run(configFileUrl, program.verbose, {
+const cliConfig = {
     server: {
         host: program.host,
         port: program.port
@@ -33,8 +32,11 @@ run(configFileUrl, program.verbose, {
             disableCache: program.disableCache,
             mergeAssets: program.mergeAssets
         }
-    }
-})
+    },
+    watch: program.watch ? { files: program.watch } : false
+}
+
+run(configFileUrl, program.verbose, cliConfig)
 
 function run (configFileUrl, verbose, cliConfig) {
     if (verbose) {
