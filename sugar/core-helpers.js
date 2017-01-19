@@ -4,7 +4,8 @@ const {
     isArray,
     SafeString
 } = require('sugar-template/lib/utils')
-const { resolveUrl } = require('./core-plugins')
+const { resolveUrl, genAttrsStr } = require('./core-plugins')
+const { isHttpUrl } = require('../helper/utils')
 
 function injectCoreHelpers (instance) {
     instance.registerHelper('if', function (conditional, options) {
@@ -94,6 +95,16 @@ function injectCoreHelpers (instance) {
     instance.registerHelper('url', function (url, options) {
         const res = resolveUrl(url, options)
         return res && res.expectedPath
+    })
+
+    instance.registerHelper('img', function (url, options) {
+        const attrs = genAttrsStr(options.hash)
+        // retrive url from token
+        if (isHttpUrl(url)) {
+            return new SafeString(`<img src="${url}" ${attrs} />`)
+        }
+        const resolved = resolveUrl(url, options)
+        return new SafeString(`<img src="${resolved.expectedPath}" ${attrs} />`)
     })
 }
 

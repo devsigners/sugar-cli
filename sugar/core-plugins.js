@@ -257,3 +257,4 @@ exports = module.exports = function injectCorePlugins (instance) {
 }
 
 exports.resolveUrl = resolveUrl
+exports.genAttrsStr = genAttrsStr
