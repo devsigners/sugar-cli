@@ -1,12 +1,42 @@
-const colors = require('colors')
+const colors = require('colors/safe')
+const { Logger } = require('../helper/logger')
 
-function colored(text, color = 'black') {
-    return colors[color](text)
-}
-
-exports = module.exports = (name) => {
-    const prefix = colored(name, 'green')
-    return (text, color = 'gray') => {
-        console.log(`${prefix} ${colored(text, color)}`)
+const logger = new Logger({
+    showTime: false,
+    alwaysCheckLevel: false,
+    level: 0,
+    theme: {
+        log: 'gray'
     }
+})
+
+// custom logger
+logger._log = function _log (message, indent = true, level = 'log') {
+    // Check if we should output
+    const levelNum = this.levels[level]
+    if (levelNum < this.level) return
+
+    if (this.alwaysCheckLevel) {
+        const _level = +process.env.LOGLEVEL || 0
+        if (levelNum < _level) return
+    }
+
+    if (typeof message !== 'string') {
+        return console.log()
+    }
+    console[level](
+        (indent ? '  ' : '') + colors[level](message)
+    )
 }
+
+logger.exit = function exit (title, msg, num = 1, level = 'error') {
+    if (title) {
+        this.zLog(title, true, level, true)
+    }
+    if (msg) {
+        this[level](msg)
+    }
+    process.exit(num)
+}
+
+module.exports = logger

@@ -1,43 +1,48 @@
 const Koa = require('koa')
 const livereload = require('koa-livereload')
-const serveList = require('./static/serveList')
-const debug = require('debug')('sugar-server')
+const koaLogger = require('koa-logger')
+const logger = require('../helper/logger')
 const Reloader = require('./livereload')
 
-module.exports = function(config, setting) {
-    debug('[server] Init server, config is %o', config)
-    const sugarTemplate = require('./template/koa-middleware')
+module.exports = runSugarServer
+
+function runSugarServer (config = {}) {
+    logger.info('start server, config is %j', 'server', config)
+    const sugar = require('../sugar/koa-middleware')
     const serve = require('./static')
     const app = new Koa()
-    if (config.template.serveIndex) {
-        app.use(serveList(config.template.root))
+
+    if (config.server.verbose) {
+        app.use(koaLogger())
     }
-    app.use(sugarTemplate(config.template, setting))
+    app.use(sugar(config.template, config.extra))
 
     app.use(serve(config.template.root, {
         defer: true
     }))
 
     if (config.watch) {
-        app.use(livereload({
-            port: config.watch.port
-        }))
-        // start livereload server
+        const port = config.watch.port
+        app.use(livereload(port ? { port } : undefined))
         const instance = new Reloader({
             files: config.watch.files,
-            port: config.watch.port,
-            watchOptions: {
-                cwd: config.template.root
+            port,
+            chokidar: {
+                cwd: config.template.root,
+                ignoreInitial: true,
+                followSymlinks: false
             }
         })
+        // start livereload server
         instance.start()
     }
 
-    app.listen(config.server.port, config.server.host, (err) => {
+    app.listen(config.server.port, config.server.host, err => {
         if (err) {
-            debug('[server] Failed to run server, error defail is %o', err)
+            logger.zLog(`failed to run server`, true, 'error', true)
+            logger.zLog(`error defail is ${err}`, true, 'error')
         } else {
-            debug(`[server] Server is running at http://${config.server.host}:${config.server.port}`)
+            logger.zLog(`server is running at http://${config.server.host}:${config.server.port}`, true, 'info', true)
         }
     })
     return app

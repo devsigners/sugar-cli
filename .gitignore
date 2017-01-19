@@ -1,5 +1,12 @@
-node_modules
+# system
 .DS_Store
+
+# node
+node_modules
 *.log
-/tmp
+
+# tmp files
+tmp
 ._*
+__*.css
+__*.css.map

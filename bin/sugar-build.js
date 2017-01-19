@@ -1,169 +1,248 @@
 #!/usr/bin/env node
 
-const {
-    join,
-    sep,
-    isAbsolute
-} = require('path')
-const colors = require('colors') // eslint-disable-line
+const { join, sep, isAbsolute, resolve } = require('path')
+const colors = require('colors/safe')
 const program = require('./command')
 const {
+    tryAndLoadData,
     merge,
-    list,
-    write,
-    read,
-    getProjectDir,
-    tryAndLoadConfig
-} = require('../utils')
-const log = require('./logger')('sugar-build')
-const createRenderer = require('../server/template/koa-middleware').createRenderer
+    getDirectoryFromUrl
+} = require('../helper/utils')
+const { existsSync, list, read, write } = require('../helper/fs')
+const logger = require('./logger')
+const { createRenderer } = require('../sugar/koa-middleware')
+const Sugar = require('../sugar/core')
 
 program
-    .option('-d, --dest <dir>', 'Specify dest dir')
-    .option('--replace-abs', 'Replace all absolute urls with relative ones')
-    .option('--strict', 'Only process htmls inside dir with "project.yml"')
+    .option('-d, --dest <dir>', 'dest directory')
+    .option('-s, --src <dir>', 'source directory, default to `config.template.root`')
+    .option('--src-file <dir>', 'source file, take precede over `src`')
+    .option('--htmls <patterns>', 'pattern to list html files, such as "**/*.html,!_.html"', patterns => {
+        return patterns && patterns.split(',')
+    })
+    .option('--strict', 'only process htmls in directory with config file')
+    .option('--verbose', 'output processing details')
     .on('--help', () => {
-        console.log('  Examples:'.green)
+        console.log(colors.green('  Examples:'))
         console.log()
-        console.log('    $ sugar build <configFileUrl> --dest dest'.grey)
+        console.log(colors.gray('    $ sugar build sugar.config.js -d dest'))
     })
     .parse(process.argv)
 
 const configFileUrl = program.args[0]
 
-build(configFileUrl, program.dest || '', {
-    replaceAbs: program.replaceAbs,
+build(configFileUrl, program.dest, program.verbose, {
+    htmls: program.htmls,
+    srcFile: program.srcFile,
+    srcDir: program.src,
     strict: program.strict
 })
 
-function build(configFileUrl, destDir, options) {
-    if (!configFileUrl) {
-        logHelpInfo(`When build, configFileUrl is required.`, 'Usage: $ sugar build <configFileUrl> [options]')
-        process.exit(0)
+function build (configFileUrl, dest, verbose, options) {
+    // NOTE: Check if we should output render process info?
+    if (verbose) {
+        process.env.LOGLEVEL = 0
+        logger.level = 0
+    } else {
+        process.env.LOGLEVEL = 5
+        logger.level = 5
     }
 
-    const config = {}
-    try {
-        configFileUrl = isAbsolute(configFileUrl) ? configFileUrl : join(process.cwd(), configFileUrl)
-        const defaultConfig = require(join(__dirname, 'res/sugar.config.js'))
-        defaultConfig.build.dest = null // don't use defaultConfig's build path
-        merge(config, defaultConfig, require(configFileUrl))
-    } catch (e) {
-        log(`Can not parse config file correctly.`, 'red')
-        log(`"${configFileUrl}" is invalid or not exist.`, 'gray')
-        log(e.stack.toString(), 'gray')
-        process.exit(0)
-    }
-
-    const templateConfig = config.template
-    const templateExt = templateConfig.templateExt
-
-    if (!destDir) {
-        if (!config.build.dest) {
-            log(`You dont set build dest!`, 'red')
-            process.exit(0)
+    const { destDir, config } = prepare(dest, configFileUrl)
+    const buildConfig = config.build || {}
+    // Cli has higher priority
+    Object.keys(options).forEach(p => {
+        if (options[p] != null) {
+            buildConfig[p] = options[p]
         }
+    })
+
+    return getHTMLFiles(config.template, buildConfig).then(fileList => {
+        let len = fileList && fileList.length
+        if (len) {
+            const promises = []
+            const core = new Sugar()
+            merge(core.setting, {
+                disableCache: true,
+                mergeAssets: true
+            }, config.extra)
+            const render = createRenderer(core, config.template)
+            while (len--) {
+                const file = fileList[len]
+                promises.push(render({
+                    path: join('/', file)
+                }).then(html => {
+                    logger.log(`File ${file} processed`)
+                    return write(join(destDir, file), html, true)
+                }))
+            }
+            return Promise.all(promises).then(() => {
+                logger.info('All templates processed')
+                if (buildConfig.assets) {
+                    return copyAssets(config.template, destDir, buildConfig.assets).then(() => {
+                        logger.info('All assets copied')
+                    })
+                }
+            }).then(() => {
+                console.log()
+                console.log(colors.bold(colors.green('  Success!')))
+                console.log(colors.gray(`  see ${destDir} for all build files`))
+            })
+        } else {
+            console.log()
+            console.log(colors.bold(colors.green('  Done (no files processed)!')))
+            if (!verbose) {
+                console.log(colors.gray(`  use --verbose to see details`))
+            }
+            logger.exit(null, null, 0)
+        }
+    }).catch(e => {
+        logger.error(`Error occurred while building, detail is:`)
+        logger.error(e.stack.toString())
+    })
+}
+
+function prepare (destDir, configFileUrl) {
+    // Check configFileUrl.
+    if (!configFileUrl) {
+        configFileUrl = 'sugar.config.js'
+        logger.warn(`configFileUrl unspecified, will use "sugar.config.js"`)
+    }
+
+    // Prepare config.
+    const config = {}
+    let specifiedConfig
+    try {
+        configFileUrl = resolve(configFileUrl)
+        if (!existsSync(configFileUrl)) {
+            logger.warn(`no such file "${configFileUrl}"`, true)
+        } else {
+            specifiedConfig = require(configFileUrl)
+        }
+        const defaultConfig = require('../helper/config.js')
+        // Don't use defaultConfig's build path
+        defaultConfig.build.dest = null
+        merge(config, defaultConfig, specifiedConfig)
+        // If not specified, use cwd as root.
+        if (!specifiedConfig) {
+            config.template.root = process.cwd()
+        }
+        logger.log(`config is %j`, true, config)
+    } catch (e) {
+        logger.exit(`Error occured when get config info`, e.stack.toString(), 1)
+    }
+
+    // Prepare destDir.
+    if (!destDir) {
         destDir = config.build.dest
+        logger.warn(`destDir unspecified, will use config.build.dest "${destDir}"`)
+        if (!config.build.dest) {
+            logger.exit('Error: no valid dest directory found', 'config.build.dest & destDir are all unspecified', 1)
+        }
     }
     destDir = isAbsolute(destDir) ? destDir : join(process.cwd(), destDir)
 
-    list(templateConfig.root, [
-        '**/*' + templateExt,
-        '!' + templateConfig.shared + '/**/*' + templateExt,
-        '!**/node_modules/**/*' + templateExt,
-        '!**/bower_modules/**/*' + templateExt,
-        '!**/_*' // exclude _xxx.html
-    ].concat(config.build.htmlPattern || [])).then(files => {
-        log(`Files captured by pattern [${files.length}]:\n\t${
+    return {
+        config,
+        destDir
+    }
+}
+
+function getHTMLFiles (templateConfig = {}, { srcFile, srcDir, strict, htmls = [], ignoreBuiltinPatterns } = {}) {
+    const templateExt = templateConfig.templateExt
+    let dir
+    if (srcFile) {
+        srcFile = isAbsolute(srcFile) ? srcFile : join(process.cwd(), srcFile)
+        if (!existsSync(srcFile)) {
+            logger.exit(`no such file "${srcFile}" (srcFile)`, '', 1)
+        }
+        return Promise.resolve([srcFile])
+    } else if (srcDir) {
+        srcDir = isAbsolute(srcDir) ? srcDir : join(process.cwd(), srcDir)
+        if (!existsSync(srcDir)) {
+            logger.exit(`no such file "${srcDir}" (srcDir)`, '', 1)
+        }
+        dir = srcDir
+    } else {
+        dir = templateConfig.root
+    }
+
+    if (!ignoreBuiltinPatterns) {
+        htmls.push(
+            '**/*' + templateExt,
+            '!**/node_modules/**/*' + templateExt,
+            '!**/bower_modules/**/*' + templateExt,
+            '!**/_*' // exclude _xxx.html
+        )
+        if (templateConfig.shared) {
+            htmls.push('!' + templateConfig.shared + '/**/*' + templateExt)
+        }
+    }
+    return list(dir, htmls).then(files => {
+        logger.log(`Files captured by pattern [${files.length}]:\n\t${
             files.length ? files.join('\n\t') : 'None'
         }`)
+
         if (!files.length) return
+
         const excludeFiles = []
         const fileList = files.map(file => {
-            const projectDir = getProjectDir(join('/', file), templateConfig.isProjectGroup)
-            const localConfig = tryAndLoadConfig(
+            const projectDir = getDirectoryFromUrl(join('/', file), templateConfig.groups)
+            const localConfig = tryAndLoadData(
                 join(templateConfig.root, projectDir, templateConfig.configFilename),
-                ['.yml', '.yaml', '.json', '.js'],
+                templateConfig.dataExts,
                 true
             )
-            if (!localConfig && options.strict) {
-                excludeFiles.push(file)
+            if (!localConfig) {
+                if (strict) {
+                    excludeFiles.push(file)
+                    return
+                }
             } else {
                 const parts = file.split(sep)
                 if (
-                    parts.length > 2 &&
-                    (parts[1] === (localConfig && localConfig.layout || templateConfig.layout) ||
-                    parts[1] === (localConfig && localConfig.partial || templateConfig.partial))
+                    parts.length > 2 && (
+                        parts[1] === (localConfig.layout || templateConfig.layout) ||
+                        parts[1] === (localConfig.partial || templateConfig.partial)
+                    )
                 ) {
                     excludeFiles.push(file)
-                    return null
+                    return
                 }
             }
             return file
         }).filter(file => !!file)
-
-        log(`Files will be excluded [${excludeFiles.length}]:\n\t${
+        logger.log(`Files will be excluded [${excludeFiles.length}]:\n\t${
             excludeFiles.length ? excludeFiles.join('\n\t') : 'None'
         }`)
 
         return fileList
-    }).then(fileList => {
-        let len = fileList && fileList.length
-        if (len) {
-            const promises = []
-            const writer = require('../server/template/sugar-server')
-            if (options.replaceAbs) {
-                writer.__setting__.makeResUrlRelative = true
-            }
-            const render = createRenderer(writer, templateConfig)
-            while (len--) {
-                const file = fileList[len]
-                promises.push(render({}, join('/', file)).then(html => {
-                    log(`File ${file} processed.`)
-                    return write(join(destDir, file), html, true)
-                }))
-            }
-            return Promise.all(promises)
-        }
-    }).then(() => {
-        log('All htmls processed!', 'green')
-        console.log()
-        log('Now process static resources.')
+    })
+}
 
-        return list(templateConfig.root, [
+function copyAssets (templateConfig, destDir, assets) {
+    if (!Array.isArray(assets)) {
+        assets = [
             '**/*.js',
             '**/*.css',
-            '**/.*.css',
             '**/*.{png,jpg,gif,webp}',
             '**/*.{svg,eot,ttf,otf,woff}',
             '**/*.{mp3,mp4,ogg,wav,aac,webm}',
             '!**/node_modules/**/*.*',
-            '!**/bower_modules/**/*.*'
-        ]).then(files => {
-            log(`Static resources captured by pattern [${files.length}]:\n\t${
-                files.length ? files.join('\n\t') : 'None'
-            }`)
-            const promises = files.map(file => {
-                return read(join(templateConfig.root, file), {}).then(data => {
-                    log(`File ${file} processed.`)
-                    return write(join(destDir, file), data, true, {})
-                })
+            '!**/bower_modules/**/*.*',
+            '!**/sugar.config.js'
+        ]
+    }
+    return list(templateConfig.root, assets).then(files => {
+        logger.log(`Static resources captured by pattern [${files.length}]:\n\t${
+            files.length ? files.join('\n\t') : 'None'
+        }`)
+        const promises = files.map(file => {
+            return read(join(templateConfig.root, file), {}).then(data => {
+                logger.log(`File ${file} processed.`)
+                return write(join(destDir, file), data, true, {})
             })
-            return Promise.all(promises)
         })
-    }).then(() => {
-        log('All static resources processed!', 'green')
-    }).catch(e => {
-        console.log()
-        log('Sorry, some errors occurred.', 'gray')
-        log(e.stack.toString(), 'red')
-        console.log()
+        return Promise.all(promises)
     })
-}
-
-function logHelpInfo(info, usage) {
-    if (info) log(info, 'red')
-    if (usage) log(usage)
-    console.log()
-    console.log('Run help for details: $ sugar help build'.grey)
 }

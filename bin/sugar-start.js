@@ -1,75 +1,87 @@
 #!/usr/bin/env node
 
-const {
-    join,
-    isAbsolute
-} = require('path')
-const colors = require('colors') // eslint-disable-line
+const { resolve, extname } = require('path')
+const colors = require('colors/safe')
 const program = require('./command')
-const {
-    merge
-} = require('../utils')
-const log = require('./logger')('sugar-dev-server')
+const { smartMerge } = require('../helper/utils')
+const { existsSync } = require('../helper/fs')
+const logger = require('./logger')
 
 program
-    .option('-s, --silent', 'Do not log message except error info')
-    .option('-w, --watch', 'Enable watch and livereload')
-    .option('--watch-files <files>', 'Specify watch files with glob, like "**/*.html,**/*.css"')
-    .option('--watch-port <port>', 'Specify livereload server port, default is 35729', parseInt)
-    .option('--css-compatible [level]', 'Specify css compatibility, support values: ie7|ie8|default')
-    .option('--no-merge-css', 'Disable merge css when render page')
-    .option('--no-move-res', 'Dont move css to </head> and js to </body>')
+    .option('--host <host>', 'server host, default is 0.0.0.0')
+    .option('--port <port>', 'server port, default is 3000', port => Number(port))
+    .option('--disable-cache', 'disable server cache')
+    .option('--merge-assets', 'auto merge css and js code')
+    .option('-w, --watch [files]', 'watch and livereload, support file/dir/glob, like "**/*.{html,css}"')
+    .option('--verbose', 'output processing details')
     .on('--help', () => {
-        console.log('  Examples:'.green)
+        console.log(colors.green('  Examples:'))
         console.log()
-        console.log('    $ sugar start [configFileUrl]'.grey)
+        console.log(colors.gray('    $ sugar start configFileUrl --verbose'))
     })
     .parse(process.argv)
 
 const configFileUrl = program.args[0]
-
-run(configFileUrl, program.silent, {
-    watch: program.watch,
-    files: program.watchFiles ? program.watchFiles.split(',') : ['**/*.css', '**/*.js', '**/*.html'],
-    port: program.watchPort
-}, {
-    autoMergeCss: program.mergeCss,
-    resSmartPos: program.moveRes,
-    cssCompatible: (
-        program.cssCompatible === true || program.cssCompatible === 'default'
-    ) ? '*' : program.cssCompatible
-})
-
-function run(configFileUrl, silent, watch, setting) {
-    if (!configFileUrl) {
-        logHelpInfo(`When run develop server, configFileUrl is required.`, 'Usage: $ sugar start <configFileUrl> [options]')
-        process.exit(0)
-    }
-
-    const config = {}
-    try {
-        configFileUrl = isAbsolute(configFileUrl) ? configFileUrl : join(process.cwd(), configFileUrl)
-        merge(config, require(join(__dirname, 'res/sugar.config.js')), require(configFileUrl))
-    } catch (e) {
-        log(`Can not process config correctly.`, 'red')
-        log(`Maybe ${configFileUrl} is invalid.`, 'red')
-        console.error(e)
-        process.exit(0)
-    }
-
-    if (!silent) {
-        process.env.DEBUG = 'sugar-template,sugar-server,livereload'
-    }
-
-    if (watch.watch) {
-        config.watch = watch
-    }
-    require(join(__dirname, '../server'))(config, setting)
+const cliConfig = {
+    server: {
+        host: program.host,
+        port: program.port,
+        verbose: program.verbose
+    },
+    template: {
+        extra: {
+            disableCache: program.disableCache,
+            mergeAssets: program.mergeAssets
+        }
+    },
+    watch: program.watch ? { files: program.watch } : false
 }
 
-function logHelpInfo(info, usage) {
-    if (info) log(info, 'red')
-    if (usage) log(usage)
+run(configFileUrl, cliConfig)
+
+function run (configFileUrl, cliConfig) {
+    if (cliConfig.server.verbose) {
+        process.env.LOGLEVEL = 0
+        logger.level = 0
+    } else {
+        process.env.LOGLEVEL = 5
+        logger.level = 5
+    }
+
+    const config = getConfig(configFileUrl, cliConfig)
     console.log()
-    console.log('Run help for details: $ sugar help start'.grey)
+    console.log(
+        colors.green(colors.bold('  Successfully start sugar server!'))
+    )
+    console.log()
+    require('../server')(config)
+}
+
+function getConfig (configFileUrl, cliConfig) {
+    // Check configFileUrl.
+    if (!configFileUrl) {
+        configFileUrl = 'sugar.config.js'
+        logger.warn(`configFileUrl unspecified, will use "sugar.config.js"`)
+    }
+    const config = {}
+    let specifiedConfig, root
+    configFileUrl = resolve(configFileUrl)
+    // If no extname, it means configFileUrl is root directory
+    if (!extname(configFileUrl)) {
+        root = configFileUrl
+    }
+    const defaultConfig = require('../helper/config.js')
+    if (!root && existsSync(configFileUrl)) {
+        try {
+            specifiedConfig = require(configFileUrl)
+        } catch (e) {
+            logger.exit(`Error occured when parsing config file`, e.stack.toString(), 1)
+        }
+    }
+    smartMerge(config, defaultConfig, specifiedConfig, cliConfig)
+    if (root) {
+        config.template.root = root
+    }
+    logger.log(`config is %j`, true, config)
+    return config
 }
