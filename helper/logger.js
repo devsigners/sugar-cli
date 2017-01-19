@@ -40,9 +40,9 @@ class Logger {
         return `[${this.formatTime(date)}]`
     }
     _getLevel (level = 'log') {
-        return `[${level}]`
+        return `[${level}]`.toUpperCase()
     }
-    _log (message, title, level = 'log') {
+    _log (message, title, level = 'log', indent = true) {
         // check if we should log
         const levelNum = this.levels[level]
         if (levelNum < this.level) return
@@ -56,7 +56,7 @@ class Logger {
             return console.log()
         }
         console[level](
-            [
+            (indent ? '  ' : '') + [
                 this._getTime(),
                 this._getLevel(level),
                 this._getTitle(title)
