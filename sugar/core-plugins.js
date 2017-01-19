@@ -20,6 +20,8 @@ const ctrlKeyMap = {
     mergeAssets: true
 }
 
+const getAssetName = name => `__${name}`
+
 const genAttrsStr = hash => {
     let attrs = ''
     for (const attr in hash) {
@@ -68,7 +70,7 @@ function attachPromise (res, promise, processHtml) {
 function cssPlugin (instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('css', cssHelper)
-
+    const renameFn = instance.setting.getAssetName || getAssetName
     return function unregister () {
         instance.unregisterHelper('css')
         instance.removeListener('post-render', onPostRender)
@@ -133,7 +135,7 @@ function cssPlugin (instance) {
                 // flat files, files is like [[File], [File]]
                 files = files.reduce((prev, file) => prev.concat(file), [])
                 const destDir = relative(res.config.root, join(res.url, '..'))
-                targetUrl = `${destDir}/__c_${name}.css`
+                targetUrl = `${destDir}/${renameFn(name)}.css`
                 return ucprocessor.apply(files, [
                     {
                         name: 'concat',
@@ -195,7 +197,7 @@ function cssPlugin (instance) {
 function jsPlugin (instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('js', jsHelper)
-
+    const renameFn = instance.setting.getAssetName || getAssetName
     return function unregister () {
         instance.unregisterHelper('js')
         instance.removeListener('post-render', onPostRender)
@@ -221,7 +223,7 @@ function jsPlugin (instance) {
             if (!tasks.length) {
                 return
             }
-            targetUrl = join(res.url, `../__c_${name}.js`)
+            targetUrl = join(res.url, `../${renameFn(name)}.js`)
             return write(targetUrl, files.join('\n'))
         }), html => {
             if (tasks.length) {
