@@ -7,7 +7,8 @@
     "sugar": "bin/sugar.js"
   },
   "scripts": {
-    "lint": "eslint bin sugar server helper"
+    "lint": "eslint bin sugar server helper",
+    "test": "ava"
   },
   "repository": {
     "type": "git",
@@ -52,9 +53,15 @@
     "node": ">=6.0.0"
   },
   "devDependencies": {
+    "ava": "^0.17.0",
     "eslint": "^3.13.1",
     "eslint-config-standard": "^6.2.1",
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^2.0.1"
+  },
+  "ava": {
+    "files": [
+      "test/*.spec.js"
+    ]
   }
 }
