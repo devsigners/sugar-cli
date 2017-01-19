@@ -95,7 +95,7 @@ const smartMerge = (target, source, ...rest) => {
 }
 
 const isHttpUrl = url => {
-    return url && /^http(s):\/\//.test(url)
+    return url && /^https?:\/\//.test(url)
 }
 
 // get project directory from url
