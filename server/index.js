@@ -1,5 +1,7 @@
 const Koa = require('koa')
+const livereload = require('koa-livereload')
 const logger = require('../helper/logger')
+const Reloader = require('./livereload')
 
 module.exports = runSugarServer
 
@@ -14,6 +16,22 @@ function runSugarServer (config = {}) {
     app.use(serve(config.template.root, {
         defer: true
     }))
+
+    if (config.watch) {
+        const port = config.watch.port
+        app.use(livereload(port ? { port } : undefined))
+        const instance = new Reloader({
+            files: config.watch.files,
+            port,
+            chokidar: {
+                cwd: config.template.root,
+                ignoreInitial: true,
+                followSymlinks: false
+            }
+        })
+        // start livereload server
+        instance.start()
+    }
 
     app.listen(config.server.port, config.server.host, err => {
         if (err) {
