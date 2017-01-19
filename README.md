@@ -1,4 +1,4 @@
-# sugar-cli
+# sugar-cli [![Build Status](https://travis-ci.org/creeperyang/sugar-cli.svg?branch=master)](https://travis-ci.org/creeperyang/sugar-cli)
 
 > Simple yet powerful tool for prototyping development
 
@@ -19,4 +19,8 @@ Run `sugar help [command]` for detail info.
 1. `sugar init`, init the directory structure with a simple demo. Refer to the demo and you can quickly start.
 2. `sugar start`, run a development server, view rendered pages in browser. Support livereload.
 3. `sugar build`, build all templates to static htmls.
-4. *more...*
+4. `sugar static`, serve static files.
+
+# License
+
+MIT
