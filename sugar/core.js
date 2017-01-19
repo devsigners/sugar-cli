@@ -71,9 +71,9 @@ class Sugar extends EventEmitter {
         return ast
     }
     fetchTemplate (url) {
-        logger.log(`%s`, `fetchTemplate`, url)
         let disableCache = this.setting.disableCache
         let tpl
+        logger.log(`disableCache: %j, url: %s`, `fetchTemplate`, disableCache, url)
         // url likes __xxx__.ext should always use cache
         if (/__\S+__\.ext$/.test(url)) {
             disableCache = false
@@ -90,13 +90,13 @@ class Sugar extends EventEmitter {
         return Promise.resolve(tpl)
     }
     fetchData (url, exts = defaultDataFileExts) {
-        logger.log(`%s`, `fetchData`, url)
+        logger.log(`disableCache: %j, url: %s`, `fetchData`, this.setting.disableCache, url)
         let data
         if (typeof exts === 'string') {
             // Let fetchData support http(s) url
             if (isHttpUrl(url)) {
-                return fetch(url).then(res => {
-                    data = res.json()
+                return fetch(url).then(res => res.json()).then(data => {
+                    logger.log('remote data fetched: %j', 'fetchData', data)
                     this.data.set(url, data)
                     return data
                 })
@@ -237,7 +237,6 @@ class Sugar extends EventEmitter {
             } else {
                 rawUrl = raw
             }
-
             if (isHttpUrl(rawUrl) || isAbsolute(rawUrl)) {
                 return rawUrl
             }
@@ -259,7 +258,7 @@ class Sugar extends EventEmitter {
         }
 
         function collectAndResolveDependencies (ast) {
-            logger.log(``, `collectAndResolveDependencies`)
+            logger.log(`AST type: ${ast.type}`, `collectAndResolveDependencies`)
             const innerTasks = []
             traverser(ast, {
                 Partial (token) {
@@ -282,21 +281,26 @@ class Sugar extends EventEmitter {
                 token.name.value = partialUrl
                 // For compatible reason, always treat name.value as string
                 token.name.type = 'primitive'
+                logger.log(`token: %j`, `resolvePartial`, token.name)
+                if (PartialCache[partialUrl] != null) {
+                    logger.info('will use cache: %s...', 'resolvePartial', PartialCache[partialUrl].slice(0, 20))
+                    return
+                }
 
-                if (PartialCache[partialUrl] != null) return
-
-                const content = instance.partials.get(partialUrl)
                 // Use get, so we can ensure cache won't be deleted
-                if (content != null) {
-                    // cache it to prevent deleted of this.partials
-                    PartialCache[partialUrl] = content
-                } else {
+                const content = instance.partials.get(partialUrl)
+
+                // If disableCache is true, always re-fetch.
+                if (content == null || instance.setting.disableCache) {
                     return instance.fetchTemplate(partialUrl)
                         .then(tpl => {
                             PartialCache[partialUrl] = tpl
                             return partialUrl
                         })
                 }
+
+                // cache it to prevent deleted of this.partials
+                PartialCache[partialUrl] = content
             }
         }
     }
