@@ -2,9 +2,13 @@
 
 > Simple yet powerful tool for prototyping development
 
-`sugar-cli` is a tool to help build prototypes.
+`sugar-cli` is a tool with nice features to help build prototypes.
 
-When we write web pages to prototype our interaction and visual design, pure static html is sometimes not powerful enough. And pages written in `PHP/JSP/...` have too many dependencies to work correctly. So, this is why `sugar-cli` appeared, and it provides powerful capabilities with simple syntax.
+1. support `mustache` like template
+2. support use and mix-use `sass/less/postcss`
+3. support yaml syntax to specify layout, data file (include **Remote URL**)...
+4. powerful development server with simple config
+5. support build templates to static files
 
 ## Install
 
@@ -21,6 +25,6 @@ Run `sugar help [command]` for detail info.
 3. `sugar build`, build all templates to static htmls.
 4. `sugar static`, serve static files.
 
-# License
+## License
 
 MIT
