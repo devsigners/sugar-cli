@@ -9,7 +9,7 @@ const {
 } = require('path')
 const ucprocessor = require('universal-css-processor')
 const { write, read } = require('../helper/fs')
-const { isHttpUrl } = require('../helper/utils')
+const { isHttpUrl, merge } = require('../helper/utils')
 const { SafeString } = require('sugar-template/lib/utils')
 
 const ctrlKeyMap = {
@@ -70,7 +70,15 @@ function attachPromise (res, promise, processHtml) {
 function cssPlugin (instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('css', cssHelper)
+
     const renameFn = instance.setting.getAssetName || getAssetName
+    const cssProcessorConfig = merge({
+        autoprefixer: {
+            browsers: ['last 2 versions', '> 2%']
+        },
+        minify: false
+    }, instance.setting.cssProcessorConfig)
+
     return function unregister () {
         instance.unregisterHelper('css')
         instance.removeListener('post-render', onPostRender)
@@ -91,12 +99,16 @@ function cssPlugin (instance) {
             }
             // not pure css, and need to compile
             else if (!v.isPureCss) {
+                const processors = [{ name: extname(v.path).slice(1) }]
+                if (cssProcessorConfig.autoprefixer) {
+                    processors.push({
+                        name: 'autoprefixer',
+                        options: cssProcessorConfig.autoprefixer
+                    })
+                }
                 tasks.push(ucprocessor.process(
                     [v.relativePath],
-                    [
-                        { name: extname(v.path).slice(1) },
-                        { name: 'autoprefixer' }
-                    ],
+                    processors,
                     {
                         cwd: res.config.root,
                         base: res.config.root,
@@ -136,20 +148,23 @@ function cssPlugin (instance) {
                 files = files.reduce((prev, file) => prev.concat(file), [])
                 const destDir = relative(res.config.root, join(res.url, '..'))
                 targetUrl = `${destDir}/${renameFn(name)}.css`
-                return ucprocessor.apply(files, [
-                    {
-                        name: 'concat',
-                        options: { destFile: targetUrl }
-                    },
-                    {
-                        name: 'autoprefixer'
-                    }
-                    // TODO: support option to control autoprefixer and minify
-                    /** ,
-                    {
-                        name: 'minify'
-                    } */
-                ], options).then(joinedFile => {
+                const processors = [{
+                    name: 'concat',
+                    options: { destFile: targetUrl }
+                }]
+                if (cssProcessorConfig.autoprefixer) {
+                    processors.push({
+                        name: 'autoprefixer',
+                        options: cssProcessorConfig.autoprefixer
+                    })
+                }
+                if (cssProcessorConfig.minify) {
+                    processors.push({
+                        name: 'minify',
+                        options: cssProcessorConfig.minify
+                    })
+                }
+                return ucprocessor.apply(files, processors, options).then(joinedFile => {
                     // const destPath = relative(joinedFile.cwd, join(res.url, '..'))
                     return ucprocessor.writeMap(joinedFile, '.', {
                         destPath: '.',
