@@ -73,11 +73,11 @@ function setup (targetDir, withDemo, autorun, verbose) {
 
         return Promise.all(tasks).then(() => {
             console.log()
-            logger.zLog('Successfully init sugar develop environment\n', true, 'info', true)
+            logger.zLog('Successfully init sugar develop environment!', true, 'info', true)
+            logger.zLog(`all files at "${targetDir}"`)
             return targetDir
         })
     }).then(targetDir => {
-        logger.zLog(`see ${targetDir}`)
         if (withDemo && autorun) {
             console.log()
             logger.zLog('about to auto run development server', true, 'info')
