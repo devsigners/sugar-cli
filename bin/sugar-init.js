@@ -4,7 +4,7 @@ const { resolve, dirname, join, extname } = require('path')
 const spawn = require('child_process').spawn
 const colors = require('colors/safe') // eslint-disable-line
 const program = require('./command')
-const { read, write, list } = require('../helper/fs')
+const { read, write, list, rm } = require('../helper/fs')
 const logger = require('./logger')
 
 program
@@ -19,9 +19,14 @@ program
     })
     .parse(process.argv)
 
-setup(program.args[0], program.demo, program.autorun, program.verbose)
+setup(program.args[0], {
+    withDemo: program.demo,
+    autorun: program.autorun,
+    verbose: program.verbose,
+    clean: program.clean
+})
 
-function setup (targetDir, withDemo, autorun, verbose) {
+function setup (targetDir, { withDemo, autorun, verbose, clean } = {}) {
     if (verbose) {
         process.env.LOGLEVEL = 0
         logger.level = 0
@@ -32,7 +37,19 @@ function setup (targetDir, withDemo, autorun, verbose) {
 
     getTargetDir(targetDir).then(targetDir => {
         logger.log(`final targetDir is ${targetDir}`)
-
+        if (clean) {
+            logger.warn(`will clean target directory`)
+            return rm(`${targetDir}/**/*`)
+                .then(() => targetDir)
+                .catch(err => {
+                    logger.exit(
+                        'Error occured when clean target directory.',
+                        err.stack ? err.stack.toString() : err
+                    )
+                })
+        }
+        return targetDir
+    }).then(targetDir => {
         const tasks = []
         // 1. write project config file
         tasks.push(
