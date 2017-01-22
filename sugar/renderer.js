@@ -26,6 +26,9 @@ const renderer = {
         const value = context.lookup(token.value)
         return value == null ? '' : escapeHtml(value)
     },
+    Comment () {
+        return ''
+    },
     IgnoreCompile (options, token) {
         return token.value
     },
