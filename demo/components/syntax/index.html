@@ -1,0 +1,15 @@
+<h2 id="template">Template</h2>
+
+<p><code class="highlighter-rouge">sugar</code>的模板语法基于<code class="highlighter-rouge">mustache</code>，并做了一些定制：</p>
+{{=
+<ol>
+    <li><code class="highlighter-rouge">{{variable}}</code> 表达式，输出转义过的值。</li>
+    <li><code class="highlighter-rouge">{{{varialbe}}}</code> 表达式，输出未转义过的值。</li>
+    <li><code class="highlighter-rouge">{{&varialbe}}</code> 等同上面。</li>
+    <li><code class="highlighter-rouge">{{= raw text &equals;}}</code> 直接输出原文。</li>
+    <li><code class="highlighter-rouge">{{!varialbe}}</code> 注释，输出空字符串。</li>
+    <li><code class="highlighter-rouge">{{#helper}}code{{/helper}}</code> helper，功能由helper自身决定。</li>
+    <li><code class="highlighter-rouge">{{helper data}}</code> inline helper。</li>
+    <li><code class="highlighter-rouge">{{data | filter}}</code> filter，输出处理后的data。</li>
+</ol>
+=}}

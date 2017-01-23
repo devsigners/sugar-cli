@@ -1,0 +1,355 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Template · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.2">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="render.html" />
+    
+    
+    <link rel="prev" href="config.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        <li class="header">GETTING STARTED</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../start/install.html">
+            
+                <a href="../start/install.html">
+            
+                    
+                    Installation and Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">CONTENT</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="struct.html">
+            
+                <a href="struct.html">
+            
+                    
+                    Directory Structure
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="page.html">
+            
+                <a href="page.html">
+            
+                    
+                    Page
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="config.html">
+            
+                <a href="config.html">
+            
+                    
+                    Configure
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="2.4" data-path="template.html">
+            
+                <a href="template.html">
+            
+                    
+                    Template
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.5" data-path="render.html">
+            
+                <a href="render.html">
+            
+                    
+                    Page Process
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Template</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="template">Template</h1>
+<p><code>sugar</code>&#x7684;&#x5185;&#x7F6E;&#x6A21;&#x677F;&#x662F;<a href="https://github.com/creeperyang/sugar-template" target="_blank"><code>sugar-template</code></a>&#xFF0C;&#x5176;&#x8BED;&#x6CD5;&#x57FA;&#x4E8E;<code>mustache</code>&#x800C;&#x589E;&#x52A0;&#x4E86;&#x4E00;&#x4E9B;&#x5B9A;&#x5236;&#xFF1A;</p>
+<ul>
+<li><code>{{ variable }}</code> &#x8868;&#x8FBE;&#x5F0F;&#xFF0C;&#x8F93;&#x51FA;&#x8F6C;&#x4E49;&#x8FC7;&#x7684;&#x503C;&#x3002;&lt;/li&gt;</li>
+<li><code>{{{ varialbe }}}</code> &#x8868;&#x8FBE;&#x5F0F;&#xFF0C;&#x8F93;&#x51FA;&#x672A;&#x8F6C;&#x4E49;&#x8FC7;&#x7684;&#x503C;&#x3002;&lt;/li&gt;</li>
+<li><code>{{&amp; varialbe }}</code> &#x7B49;&#x540C;&#x4E0A;&#x9762;&#x3002;&lt;/li&gt;</li>
+<li><code>{{= raw text =}}</code> &#x76F4;&#x63A5;&#x8F93;&#x51FA;&#x539F;&#x6587;&#x3002;&lt;/li&gt;</li>
+<li><code>{{! varialbe }}</code> &#x6CE8;&#x91CA;&#xFF0C;&#x8F93;&#x51FA;&#x7A7A;&#x5B57;&#x7B26;&#x4E32;&#x3002;&lt;/li&gt;</li>
+<li><code>{{#helper}} code {{/helper}}</code> helper&#xFF0C;&#x529F;&#x80FD;&#x7531;helper&#x81EA;&#x8EAB;&#x51B3;&#x5B9A;&#x3002;&lt;/li&gt;</li>
+<li><code>{{ helper data }}</code> inline helper&#x3002;&lt;/li&gt;</li>
+<li><code>{{ data | filter1 | filter2 }}</code> data&#x7ECF;&#x82E5;&#x5E72;filters&#x5904;&#x7406;&#x540E;&#x8F93;&#x51FA;&#x503C;&#x3002;&lt;/li&gt;</li>
+</ul>
+<p>&#x4E00;&#x4E2A;&#x7B80;&#x5355;&#x7684;&#x4F8B;&#x5B50;&#xFF1A;</p>
+<pre><code class="lang-html">{{#if user}}
+  {{&gt; &quot;./components/user.html&quot; user}}
+{{else}}
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>no user.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+{{/if}}
+</code></pre>
+<h3 id="helpers">Helpers</h3>
+<p><code>helper</code>&#x662F;&#x4E00;&#x4E2A;&#x51FD;&#x6570;&#xFF0C;&#x63A5;&#x6536;&#x53C2;&#x6570;&#xFF08;&#x5305;&#x62EC;&#x5305;&#x88F9;&#x7684;block&#x548C;else block&#xFF09;&#x5E76;&#x8FD4;&#x56DE;&#x5904;&#x7406;&#x540E;&#x7684;&#x5B57;&#x7B26;&#x4E32;&#x3002;</p>
+<p><code>sugar-template</code>&#x5185;&#x7F6E;&#x4E86;&#x4E00;&#x4E9B;helpers&#xFF1A;<code>if/unless/each</code>&#x3002;&#x901A;&#x8FC7;&#x8FD9;&#x4E9B;&#x53EF;&#x4EE5;&#x505A;&#x57FA;&#x672C;&#x7684;&#x8F93;&#x51FA;&#x63A7;&#x5236;&#x3002;</p>
+<h3 id="inlinehelpers">InlineHelpers</h3>
+<p><code>inline helper</code>&#x5373;inline&#x7684;<code>helper</code>&#x3002;</p>
+<p><code>sugar-cli</code>&#x63D0;&#x4F9B;&#x4E86;<code>css/js/url</code>&#x7B49;&#x5F3A;&#x5927;&#x7684;<code>inline helper</code>&#xFF0C;&#x667A;&#x80FD;&#x5730;&#x5904;&#x7406;&#x9759;&#x6001;&#x8D44;&#x6E90;&#x548C;&#x5176;&#x5B83;&#x3002;</p>
+<h4 id="css-url-inline-helper"><code>{{css url}}</code> inline helper</h4>
+<pre><code class="lang-html">{{css &quot;./one.scss&quot;}} // --&gt; &apos;&apos;
+{{css &quot;./two.scss&quot; mergeAssets=false}} // --&gt; <span class="hljs-tag">&lt;<span class="hljs-name">link</span>&gt;</span>
+</code></pre>
+<p><code>css</code> helper&#x4F1A;&#x8BFB;&#x53D6;&#x5E76;&#x7F16;&#x8BD1;<code>url</code>&#x6307;&#x5B9A;&#x7684;&#x6837;&#x5F0F;&#xFF08;<code>scss/less/postcss</code>&#xFF09;&#xFF0C;</p>
+<ul>
+<li>&#x5982;&#x679C;<code>mergeAssets</code>&#x4E3A;<code>falsy</code>&#xFF0C;&#x5219;&#x8FD4;&#x56DE;<code>&lt;link href=correctUrl&gt;</code>&#xFF0C;&#x5E76;&#x4FDD;&#x5B58;&#x7F16;&#x8BD1;&#x540E;&#x7684;&#x6837;&#x5F0F;&#x5230;&#x8FD9;&#x4E2A;<code>correctUrl</code>&#xFF1B;</li>
+<li>&#x5426;&#x5219;&#xFF0C;&#x8FD4;&#x56DE;&#x7A7A;&#x5B57;&#x7B26;&#x4E32;&#x3002;</li>
+<li>&#x6700;&#x7EC8;&#x5408;&#x5E76;&#x6240;&#x6709;<code>mergeAssets</code>&#x4E3A;<code>truthy</code>&#x7684;&#x6837;&#x5F0F;&#xFF0C;&#x4FDD;&#x5B58;&#x5230;&#x4E00;&#x4E2A;<code>correctUrl</code>&#xFF0C;&#x5E76;&#x63D2;&#x5165;<code>&lt;link href=correctUrl&gt;</code>&#x5230;<code>&lt;head&gt;</code>&#x6807;&#x7B7E;&#x5E95;&#x90E8;&#x3002;</li>
+</ul>
+<h4 id="js-url-inline-helper"><code>{{js url}}</code> inline helper</h4>
+<p>&#x57FA;&#x672C;&#x548C;<code>css</code> helper&#x7C7B;&#x4F3C;&#xFF0C;&#x9664;&#x4E86;&#x6700;&#x7EC8;&#x5408;&#x5E76;&#x5230;&#x811A;&#x672C;&#x662F;&#x63D2;&#x5165;&#x5230;<code>&lt;body&gt;</code>&#x6807;&#x7B7E;&#x5E95;&#x90E8;&#x3002;</p>
+<h3 id="filters">Filters</h3>
+<p><code>filter</code>&#x4E5F;&#x662F;&#x4E00;&#x4E2A;&#x51FD;&#x6570;&#xFF0C;&#x7528;&#x4E8E;&#x683C;&#x5F0F;&#x5316;&#x8F93;&#x51FA;&#x3002;</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="config.html" class="navigation navigation-prev " aria-label="Previous page: Configure">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="render.html" class="navigation navigation-next " aria-label="Next page: Page Process">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Template","level":"2.4","depth":1,"next":{"title":"Page Process","level":"2.5","depth":1,"path":"content/render.md","ref":"content/render.md","articles":[]},"previous":{"title":"Configure","level":"2.3","depth":1,"path":"content/config.md","ref":"content/config.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"gitbook":"*"},"file":{"path":"content/template.md","mtime":"2017-01-23T11:38:53.000Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-01-23T12:15:28.870Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

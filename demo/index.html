@@ -1,0 +1,49 @@
+---
+layout: common:default
+title: sugar-cli
+---
+
+{{css "assets/style/app.scss"}}
+
+{{> "common:header/index.html"}}
+
+<section class="main-content">
+    <h1 id="sugar-cli">sugar-cli <a href="https://travis-ci.org/creeperyang/sugar-cli"><img src="https://travis-ci.org/creeperyang/sugar-cli.svg?branch=master" alt="Build Status" /></a></h1>
+
+    <blockquote>
+        <p>简单但强大的原型开发（帮助）工具</p>
+    </blockquote>
+
+    <p>原型开发是前端开发中比较特殊的，偏重于HTML和CSS。传统的纯静态页开发缺少灵活性和可复用性；而借助后端模板（PHP/Java等）的话，依赖复杂，对前端不够友好。<code class="highlighter-rouge">sugar-cli</code>基于<code class="highlighter-rouge">Node.js</code>，通过自定义的模板和简洁的配置，可以高效地开发原型（prototyping）。</p>
+
+    <p><code class="highlighter-rouge">sugar-cli</code>的特性：</p>
+
+    <ol>
+        <li>类似<code class="highlighter-rouge">mustache</code>的模板语法，支持 helpers（参考<code class="highlighter-rouge">handlebars</code>）和 partials/components。</li>
+        <li>原生支持使用/混用<code class="highlighter-rouge">sass/less/postcss</code>，无需配置，自动编译。</li>
+        <li>支持在html头部写 yaml 配置，指定<code class="highlighter-rouge">layout/data</code>等等。data支持指定remote url，自动获取API数据。</li>
+        <li>强大的开发服务器，支持输出详细日志，支持livereload。</li>
+    </ol>
+
+    <h2 id="install">Install</h2>
+
+    <p>
+        <a href="https://nodei.co/npm/sugar-cli/"><img src="https://nodei.co/npm/sugar-cli.png?compact=true" alt="NPM" /></a>
+    </p>
+
+    <p>推荐全局安装: <code class="highlighter-rouge">[sudo] npm i -g sugar-cli@latest</code></p>
+
+    <h2 id="usage">Usage</h2>
+
+    <p>可以通过<code class="highlighter-rouge">sugar help [command]</code>来获取帮助信息。</p>
+
+    <ol>
+        <li><code class="highlighter-rouge">sugar init</code>初始化带demo的开发环境，可以快速开始开发。</li>
+        <li><code class="highlighter-rouge">sugar start</code>启动开发服务器，支持livereload，边开发边浏览器预览。</li>
+        <li><code class="highlighter-rouge">sugar build</code>将模板编译到静态文件。</li>
+        <li><code class="highlighter-rouge">sugar static</code>一个独立的纯静态服务器。</li>
+    </ol>
+
+    {{> "local:syntax/index.html"}}
+    {{> "common:footer/index.html"}}
+</section>
