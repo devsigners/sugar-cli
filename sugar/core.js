@@ -42,6 +42,9 @@ class Sugar extends EventEmitter {
         this.__inner_partils__ = {
             '__plain_layout__.ext': '{{{body}}}'
         }
+        this.__inner_helpers__ = new Set(
+            Object.keys(this.helpers).concat(Object.keys(this.filters))
+        )
     }
     parse (template, templateUrl) {
         logger.log(`%s`, `parse`, template && template.slice(0, 20) + '...')
@@ -268,9 +271,56 @@ class Sugar extends EventEmitter {
                             return collectAndResolveDependencies(instance.parse(PartialCache[partialUrl], partialUrl))
                         }))
                     }
+                },
+                Helper (token) {
+                    resolveHelper(token, 'Helper')
+                },
+                InlineHelper (token) {
+                    resolveHelper(token, 'InlineHelper')
+                },
+                Filter (token) {
+                    resolveFilter(token, 'Filter')
                 }
             })
             return Promise.all(innerTasks)
+
+            function resolveFilter (token, type) {
+                const filters = token.filters
+                filters.forEach(filter => {
+                    resolveHelper(filter, type)
+                })
+            }
+
+            function resolveHelper (token, type) {
+                const name = token.name
+                logger.log(`%s`, `resolveHelper`, name)
+                // Ignore built-in helpers/filters.
+                if (instance.__inner_helpers__.has(name)) {
+                    return
+                }
+                let tokenUrl = fixUrl(name, 'helper')
+                let fn
+
+                if (!extname(tokenUrl)) {
+                    tokenUrl += '.js'
+                }
+                // If helper/filters registered, udpate name and return
+                if (instance[type === 'Filter' ? 'filters' : 'helpers'][tokenUrl]) {
+                    token.name = tokenUrl
+                    return
+                }
+                try {
+                    fn = require(tokenUrl)
+                } catch (e) {
+                    logger.error(`failed to fetch helper: %s`, 'resolveHelper', tokenUrl)
+                }
+                if (fn) {
+                    // NOTE:
+                    // If helper/filters is not built-in, the name is url.
+                    instance[type === 'Filter' ? 'registerFilter' : 'registerHelper'](tokenUrl, fn)
+                    token.name = tokenUrl
+                }
+            }
 
             function resolvePartial (token) {
                 let partialUrl = fixUrl(token, 'partial')
