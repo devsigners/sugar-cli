@@ -34,7 +34,9 @@ function serveStatic (root, host = '0.0.0.0', port = 2333) {
             logger.exit(`Error occured when run static server`, err && err.stack, 1)
         } else {
             console.log()
-            logger.info(`Server is running at http://${host}:${port}, root is ${root}`)
+            logger.zLog(`Successfully start static server!`, true, 'info', true)
+            logger.zLog(`address: http://${host}:${port}`)
+            logger.zLog(`root: ${root}`)
         }
     })
 }
