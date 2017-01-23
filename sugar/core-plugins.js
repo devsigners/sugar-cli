@@ -17,7 +17,8 @@ const ctrlKeyMap = {
     forceAbsolute: true,
     base: true,
     // wether merge css (move to head) and js (move to body)
-    mergeAssets: true
+    mergeAssets: true,
+    adjustAssetsPos: true
 }
 
 const getAssetName = name => `__${name}`
@@ -87,6 +88,7 @@ function cssPlugin (instance) {
     function onPostRender (res) {
         const list = res.resourceMap.css
         const tasks = []
+        const adjustPosFiles = []
         const files = list.filter(v => {
             if (!v.path) {
                 v.path = join(res.config.root, v.expectedPath)
@@ -96,33 +98,38 @@ function cssPlugin (instance) {
             }
             if (v.mergeAssets) {
                 return true
-            }
-            // not pure css, and need to compile
-            else if (!v.isPureCss) {
-                const processors = [{ name: extname(v.path).slice(1) }]
-                if (cssProcessorConfig.autoprefixer) {
-                    processors.push({
-                        name: 'autoprefixer',
-                        options: cssProcessorConfig.autoprefixer
-                    })
-                }
-                tasks.push(ucprocessor.process(
-                    [v.relativePath],
-                    processors,
-                    {
-                        cwd: res.config.root,
-                        base: res.config.root,
-                        map: true
-                    }
-                ).then(files => {
-                    const file = files[0]
-                    const destPath = relative(file.cwd, file.base)
-                    return ucprocessor.writeMap(file, '.', { destPath, includeContent: false })
-                        .then(mapFile => {
-                            mapFile.dest(destPath)
-                            file.dest(destPath)
+            } else {
+                // Need to compile
+                if (!v.isPureCss) {
+                    const processors = [{ name: extname(v.path).slice(1) }]
+                    if (cssProcessorConfig.autoprefixer) {
+                        processors.push({
+                            name: 'autoprefixer',
+                            options: cssProcessorConfig.autoprefixer
                         })
-                }))
+                    }
+                    tasks.push(ucprocessor.process(
+                        [v.relativePath],
+                        processors,
+                        {
+                            cwd: res.config.root,
+                            base: res.config.root,
+                            map: true
+                        }
+                    ).then(files => {
+                        const file = files[0]
+                        const destPath = relative(file.cwd, file.base)
+                        return ucprocessor.writeMap(file, '.', { destPath, includeContent: false })
+                            .then(mapFile => {
+                                mapFile.dest(destPath)
+                                file.dest(destPath)
+                            })
+                    }))
+                }
+                // Need to adjust pos
+                if (v.adjustAssetsPos) {
+                    adjustPosFiles.push(v)
+                }
             }
         }).map(v => v.relativePath)
         const name = basename(res.url, res.config.templateExt)
@@ -176,10 +183,14 @@ function cssPlugin (instance) {
                 })
             })
         }), html => {
+            const links = adjustPosFiles.map(v => {
+                return `<link rel="stylesheet" href="${v.cssPath}" moved ${v.attrs}/>`
+            })
             if (files.length) {
-                return html.replace(/<\/head>/, `<link rel="stylesheet" href="${
-                    basename(targetUrl)
-                }" concated /></head>`)
+                links.push(`<link rel="stylesheet" href="${basename(targetUrl)}" concated />`)
+            }
+            if (links.length) {
+                return html.replace(/<\/head>/, `${links.join('\n')}</head>`)
             }
             return html
         })
@@ -195,6 +206,7 @@ function cssPlugin (instance) {
         }
         const resolved = resolveUrl(url, options)
         resolved.mergeAssets = options.hash.mergeAssets || instance.setting.mergeAssets
+        resolved.adjustAssetsPos = options.hash.adjustAssetsPos || instance.setting.adjustAssetsPos
         resolved.isPureCss = extname(url) === '.css'
         resolved.cssPath = resolved.expectedPath.replace(/\.\w+$/, '.css')
         resolved.includePaths = [
@@ -202,8 +214,10 @@ function cssPlugin (instance) {
             join(options.$$page, '..'),
             options.$$configRoot
         ]
+        resolved.attrs = attrs
         map.push(resolved)
-        return resolved.mergeAssets
+        // NOTE: If mergeAssets, always adjust assets pos!
+        return (resolved.mergeAssets || resolved.adjustAssetsPos)
             ? null
             : new SafeString(`<link rel="stylesheet" href="${resolved.cssPath}" ${attrs}>`)
     }
@@ -220,6 +234,7 @@ function jsPlugin (instance) {
 
     function onPostRender (res) {
         const list = res.resourceMap.js
+        const adjustPosFiles = []
         const tasks = list.filter(v => {
             if (!v.path) {
                 v.path = join(res.config.root, v.expectedPath)
@@ -229,6 +244,10 @@ function jsPlugin (instance) {
             }
             if (v.mergeAssets) {
                 return true
+            } else {
+                if (v.adjustAssetsPos) {
+                    adjustPosFiles.push(v)
+                }
             }
         }).map(v => read(v.path))
 
@@ -241,10 +260,14 @@ function jsPlugin (instance) {
             targetUrl = join(res.url, `../${renameFn(name)}.js`)
             return write(targetUrl, files.join('\n'))
         }), html => {
+            const scripts = adjustPosFiles.map(v => {
+                return `<script src="${v.expectedPath}" moved ${v.attrs}></script>`
+            })
             if (tasks.length) {
-                return html.replace(/<\/body>/, `<script src="${
-                    basename(targetUrl)
-                }" concated></script></body>`)
+                scripts.push(`<script src="${basename(targetUrl)}" concated></script>`)
+            }
+            if (scripts.length) {
+                return html.replace(/<\/body>/, `${scripts.join('\n')}</body>`)
             }
             return html
         })
@@ -259,8 +282,10 @@ function jsPlugin (instance) {
         }
         const resolved = resolveUrl(url, options)
         resolved.mergeAssets = options.hash.mergeAssets || instance.setting.mergeAssets
+        resolved.adjustAssetsPos = options.hash.adjustAssetsPos || instance.setting.adjustAssetsPos
+        resolved.attrs = attrs
         map.push(resolved)
-        return resolved.mergeAssets
+        return (resolved.mergeAssets || resolved.adjustAssetsPos)
             ? null
             : new SafeString(`<script src="${resolved.expectedPath}" ${attrs}></script>`)
     }

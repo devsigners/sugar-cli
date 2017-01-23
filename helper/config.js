@@ -41,6 +41,8 @@ module.exports = {
     server: serverConfig,
     extra: {
         disableCache: true,
-        mergeAssets: true
+        mergeAssets: true,
+        // {{css/js}} --> move <link> to <head>; move <script> to <body>
+        adjustAssetsPos: true
     }
 }
