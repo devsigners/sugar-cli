@@ -26,6 +26,8 @@
 3. `sugar build`将模板编译到静态文件。
 4. `sugar static`一个独立的纯静态服务器。
 
+详细文档可以阅读[gitbook for sugar-cli](http://creeperyang.github.io/sugar-cli/)。
+
 ## License
 
 MIT
