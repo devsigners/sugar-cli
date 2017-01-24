@@ -109,16 +109,35 @@ const renderer = {
                 token.loc.start, template || '')
         }
         let data = token.params.context
+        let hash = transformHash(token.params.hash, context)
+        let subContext
+
         if (data) {
             data = data.type === 'name' ? context.lookup(data.value) : data.value
         }
+        // Make hash accessable for partials
+        if (typeof data === 'object') {
+            Object.assign(data, hash)
+            subContext = context.push(data, null)
+        } else if (!isEmptyObject(hash)) {
+            subContext = context.push(hash, null, data)
+        }
+
         return renderAst(
             options.parse(value, partial),
-            token.params.context ? context.push(data) : context,
+            subContext || context,
             value,
             options
         )
     }
+}
+
+function isEmptyObject (obj) {
+    if (!obj || Object.prototype.toString.call(obj) !== '[object Object]') return false
+    for (let p in obj) {
+        return false
+    }
+    return true
 }
 
 function renderAst (ast, context, template, options) {
