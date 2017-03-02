@@ -205,8 +205,12 @@ function cssPlugin (instance) {
             return new SafeString(`<link rel="stylesheet" href="${url}" ${attrs}>`)
         }
         const resolved = resolveUrl(url, options)
-        resolved.mergeAssets = options.hash.mergeAssets || instance.setting.mergeAssets
-        resolved.adjustAssetsPos = options.hash.adjustAssetsPos || instance.setting.adjustAssetsPos
+        resolved.mergeAssets = options.hash.mergeAssets == null
+            ? instance.setting.mergeAssets
+            : options.hash.mergeAssets
+        resolved.adjustAssetsPos = options.hash.adjustAssetsPos == null
+            ? instance.setting.adjustAssetsPos
+            : options.hash.adjustAssetsPos
         resolved.isPureCss = extname(url) === '.css'
         resolved.cssPath = resolved.expectedPath.replace(/\.\w+$/, '.css')
         resolved.includePaths = [
@@ -281,8 +285,12 @@ function jsPlugin (instance) {
             return new SafeString(`<script src="${url}" ${attrs}></script>`)
         }
         const resolved = resolveUrl(url, options)
-        resolved.mergeAssets = options.hash.mergeAssets || instance.setting.mergeAssets
-        resolved.adjustAssetsPos = options.hash.adjustAssetsPos || instance.setting.adjustAssetsPos
+        resolved.mergeAssets = options.hash.mergeAssets == null
+            ? instance.setting.mergeAssets
+            : options.hash.mergeAssets
+        resolved.adjustAssetsPos = options.hash.adjustAssetsPos == null
+            ? instance.setting.adjustAssetsPos
+            : options.hash.adjustAssetsPos
         resolved.attrs = attrs
         map.push(resolved)
         return (resolved.mergeAssets || resolved.adjustAssetsPos)
