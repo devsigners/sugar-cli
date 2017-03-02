@@ -56,11 +56,11 @@ exports = module.exports = function middleware (options, setting) {
         return render(ctx).then(html => {
             ctx.body = html
             logger.info(`sugar render process finished`, 'middleware')
-            console.log()
+            logger.log()
             return next()
         }).catch(err => {
             logger.error(`error occured while rendering, detail is %j`, 'middleware', err)
-            console.log()
+            logger.log()
         })
     }
 }
