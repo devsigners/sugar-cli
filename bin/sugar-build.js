@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { join, sep, isAbsolute, resolve, relative } = require('path')
+const { join, sep, isAbsolute, resolve, relative, normalize } = require('path')
 const colors = require('colors/safe')
 const program = require('./command')
 const {
@@ -169,27 +169,40 @@ function getHTMLFiles (templateConfig = {}, { srcFile, srcDir, strict, htmls = [
         }
         return Promise.resolve([relative(templateConfig.root, srcFile)])
     } else if (srcDir) {
-        srcDir = isAbsolute(srcDir) ? srcDir : join(process.cwd(), srcDir)
+        srcDir = normalize(`${
+            isAbsolute(srcDir) ? srcDir : join(process.cwd(), srcDir)
+        }/`)
         if (!existsSync(srcDir)) {
             logger.exit(`no such file "${srcDir}" (srcDir)`, '', 1)
         }
-        dir = srcDir
+        if (srcDir === templateConfig.root || srcDir === normalize(templateConfig.root + '/')) {
+            dir = srcDir
+            srcDir = ''
+        } else if (srcDir.indexOf(templateConfig.root) !== 0) {
+            logger.exit(`srcDir "${srcDir}" is not a subdir of config's root`, '', 1)
+        } else {
+            dir = srcDir
+        }
     } else {
         dir = templateConfig.root
     }
 
     if (!ignoreBuiltinPatterns) {
-        htmls.push(
+        if (templateConfig.shared) {
+            htmls.unshift('!' + templateConfig.shared + '/**/*' + templateExt)
+        }
+        htmls.unshift(
             '**/*' + templateExt,
             '!**/node_modules/**/*' + templateExt,
             '!**/bower_modules/**/*' + templateExt,
             '!**/_*' // exclude _xxx.html
         )
-        if (templateConfig.shared) {
-            htmls.push('!' + templateConfig.shared + '/**/*' + templateExt)
-        }
     }
     return list(dir, htmls).then(files => {
+        if (srcDir) {
+            const subdir = relative(templateConfig.root, srcDir)
+            files = files.map(file => join(subdir, file))
+        }
         logger.log(`Files captured by pattern [${files.length}]:\n\t${
             files.length ? files.join('\n\t') : 'None'
         }`)
