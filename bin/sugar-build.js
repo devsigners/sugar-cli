@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { join, sep, isAbsolute, resolve } = require('path')
+const { join, sep, isAbsolute, resolve, relative } = require('path')
 const colors = require('colors/safe')
 const program = require('./command')
 const {
@@ -22,6 +22,7 @@ program
     })
     .option('--strict', 'only process htmls in directory with config file')
     .option('--verbose', 'output processing details')
+    .option('--no-assets', 'whether copy assets')
     .on('--help', () => {
         console.log(colors.green('  Examples:'))
         console.log()
@@ -35,18 +36,19 @@ build(configFileUrl, program.dest, program.verbose, {
     htmls: program.htmls,
     srcFile: program.srcFile,
     srcDir: program.src,
-    strict: program.strict
+    strict: program.strict,
+    assets: program.assets
 })
 
 function build (configFileUrl, dest, verbose, options) {
     // NOTE: Check if we should output render process info?
     if (verbose) {
-        process.env.LOGLEVEL = 0
         logger.level = 0
     } else {
-        process.env.LOGLEVEL = 5
-        logger.level = 5
+        logger.level = 2
     }
+    // Dont output details of sugar core
+    process.env.LOGLEVEL = 5
 
     const { destDir, config } = prepare(dest, configFileUrl)
     const buildConfig = config.build || {}
@@ -74,11 +76,19 @@ function build (configFileUrl, dest, verbose, options) {
                 }).then(html => {
                     logger.log(`File ${file} processed`)
                     return write(join(destDir, file), html, true)
+                }, err => {
+                    logger.error(`File ${file} has a problem.`)
+                    if (err instanceof Error) {
+                        throw err
+                    } else {
+                        throw new Error(err)
+                    }
                 }))
             }
             return Promise.all(promises).then(() => {
                 logger.info('All templates processed')
-                if (buildConfig.assets) {
+                // If only build one file, don't copy assets.
+                if (buildConfig.assets && !options.srcFile) {
                     return copyAssets(config.template, destDir, buildConfig.assets).then(() => {
                         logger.info('All assets copied')
                     })
@@ -99,6 +109,7 @@ function build (configFileUrl, dest, verbose, options) {
     }).catch(e => {
         logger.error(`Error occurred while building, detail is:`)
         logger.error(e.stack.toString())
+        logger.exit(null, null, 1)
     })
 }
 
@@ -156,7 +167,7 @@ function getHTMLFiles (templateConfig = {}, { srcFile, srcDir, strict, htmls = [
         if (!existsSync(srcFile)) {
             logger.exit(`no such file "${srcFile}" (srcFile)`, '', 1)
         }
-        return Promise.resolve([srcFile])
+        return Promise.resolve([relative(templateConfig.root, srcFile)])
     } else if (srcDir) {
         srcDir = isAbsolute(srcDir) ? srcDir : join(process.cwd(), srcDir)
         if (!existsSync(srcDir)) {
