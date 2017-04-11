@@ -23,6 +23,7 @@ program
     .option('--strict', 'only process htmls in directory with config file')
     .option('--verbose', 'output processing details')
     .option('--no-assets', 'whether copy assets')
+    .option('--ignore-errors', 'ignore template build error and continue process')
     .on('--help', () => {
         console.log(colors.green('  Examples:'))
         console.log()
@@ -37,7 +38,8 @@ build(configFileUrl, program.dest, program.verbose, {
     srcFile: program.srcFile,
     srcDir: program.src,
     strict: program.strict,
-    assets: program.assets
+    assets: program.assets,
+    ignoreErrors: program.ignoreErrors
 })
 
 function build (configFileUrl, dest, verbose, options) {
@@ -59,6 +61,21 @@ function build (configFileUrl, dest, verbose, options) {
         }
     })
 
+    if (buildConfig.ignoreErrors) {
+        process.on('unhandledRejection', err => {
+            logger.warn(`unhandled rejection: ${err.message || err.toString()}`)
+        })
+        process.on('rejectionHandled', () => {
+            logger.warn(`rejection handled after one turn of event loop`)
+        })
+    }
+
+    function reportSuccess () {
+        console.log()
+        console.log(colors.bold(colors.green('  Success!')))
+        console.log(colors.gray(`  see ${destDir} for all build files`))
+    }
+
     return getHTMLFiles(config.template, buildConfig).then(fileList => {
         let len = fileList && fileList.length
         if (len) {
@@ -78,6 +95,7 @@ function build (configFileUrl, dest, verbose, options) {
                     return write(join(destDir, file), html, true)
                 }, err => {
                     logger.error(`File ${file} has a problem.`)
+                    if (buildConfig.ignoreErrors) return
                     if (err instanceof Error) {
                         throw err
                     } else {
@@ -88,15 +106,17 @@ function build (configFileUrl, dest, verbose, options) {
             return Promise.all(promises).then(() => {
                 logger.info('All templates processed')
                 // If only build one file, don't copy assets.
-                if (buildConfig.assets && !options.srcFile) {
+                if (buildConfig.assets && !buildConfig.srcFile) {
                     return copyAssets(config.template, destDir, buildConfig.assets).then(() => {
                         logger.info('All assets copied')
                     })
                 }
             }).then(() => {
-                console.log()
-                console.log(colors.bold(colors.green('  Success!')))
-                console.log(colors.gray(`  see ${destDir} for all build files`))
+                if (buildConfig.ignoreErrors) {
+                    setTimeout(reportSuccess)
+                } else {
+                    reportSuccess()
+                }
             })
         } else {
             console.log()
