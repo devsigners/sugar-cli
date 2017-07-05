@@ -27,14 +27,19 @@ const FLAG_LOCALE_RE = /^\s*locale?:\s*/i
 class Sugar extends EventEmitter {
     constructor () {
         super()
-        this.setting = {}                 // global render setting
         this.plugins = {}                 // plugins
         this.helpers = {}                 // url --> helper fn
         this.filters = {}                 // url --> filter fn
         this.partials = new LRUCache(64)  // url --> template
         this.cache = new LRUCache(64)     // template --> tokens
         this.data = new LRUCache(64)      // url --> data
-
+        // global render setting
+        Object.defineProperty(this, 'setting', {
+            value: {},
+            writable: false,
+            enumerable: true,
+            configurable: false
+        })
         // prepare work
         injectCoreHelpers(this)
         injectCorePlugins(this)
@@ -45,6 +50,16 @@ class Sugar extends EventEmitter {
         this.__inner_helpers__ = new Set(
             Object.keys(this.helpers).concat(Object.keys(this.filters))
         )
+    }
+    _set(prop, value) {
+        if (typeof prop === 'object') {
+            merge(this.setting, prop)
+        } else if (typeof prop === 'string') {
+            this.setting[prop] = value
+        } else {
+            return
+        }
+        this.emit('setting-change', this.setting)
     }
     parse (template, templateUrl) {
         logger.log(`%s`, `parse`, template && template.slice(0, 20) + '...')
@@ -136,7 +151,7 @@ class Sugar extends EventEmitter {
             )
         }
         if ('disableCache' in config) {
-            this.setting.disableCache = !!config.disableCache
+            this._set('disableCache', !!config.disableCache)
         }
         const context = new Context(data)
         this.emit('pre-render', { url, config, directory, context })

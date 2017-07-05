@@ -72,13 +72,19 @@ function cssPlugin (instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('css', cssHelper)
 
-    const renameFn = instance.setting.getAssetName || getAssetName
+    let renameFn = instance.setting.getAssetName || getAssetName
     const cssProcessorConfig = merge({
         autoprefixer: {
             browsers: ['last 2 versions', '> 2%']
         },
         minify: false
     }, instance.setting.cssProcessorConfig)
+    instance.on('setting-change', (setting) => {
+        merge(cssProcessorConfig, setting.cssProcessorConfig)
+        if (setting.getAssetName) {
+            renameFn = setting.getAssetName
+        }
+    })
 
     return function unregister () {
         instance.unregisterHelper('css')
@@ -230,7 +236,13 @@ function cssPlugin (instance) {
 function jsPlugin (instance) {
     instance.on('post-render', onPostRender)
     instance.registerHelper('js', jsHelper)
-    const renameFn = instance.setting.getAssetName || getAssetName
+
+    let renameFn = instance.setting.getAssetName || getAssetName
+    instance.on('setting-change', (setting) => {
+        if (setting.getAssetName) {
+            renameFn = setting.getAssetName
+        }
+    })
     return function unregister () {
         instance.unregisterHelper('js')
         instance.removeListener('post-render', onPostRender)

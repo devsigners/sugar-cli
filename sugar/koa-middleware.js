@@ -45,7 +45,7 @@ exports = module.exports = function middleware (options, setting) {
     logger.info(`setup sugar middleware, options is %j, setting is %j`, 'middleware', options, setting)
     // apply special setting to renderCore
     if (setting) {
-        merge(renderCore.setting, setting)
+        renderCore._set(setting)
     }
     options = merge({}, defaultConfig, options)
 
