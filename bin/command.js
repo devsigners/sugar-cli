@@ -27,7 +27,7 @@ Command.prototype.version = function (str, flags) {
     this._version = str
     flags = flags || '-v, --version'
     this.option(flags, 'output the version number')
-    this.on('version', function () {
+    this.on('option:version', function () {
         process.stdout.write('  ' + colors.green(str) + '\n')
         process.exit(0)
     })
